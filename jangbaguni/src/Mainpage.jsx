@@ -20,7 +20,7 @@ export default function MainPage() {
         <div className="floating-emoji bottom-right">🧴</div>
 
         <h1 className="hero-title">
-          <span className="highlight-navy">식재료도</span>, <span className="highlight-red">생필품도</span><br />
+          <span className="highlight-navy">식료품도</span>, <span className="highlight-red">생필품도</span><br />
           모든 관리는, 장바구니
         </h1>
 
@@ -48,7 +48,7 @@ export default function MainPage() {
             <div className="card-emoji">📑</div>
             <h3 className="card-title">영수증 자동 인식</h3>
             <p className="card-desc">
-              마트 영수증만 찍으면 식료품과 생필품이 유통기한과 함께 자동 인식됩니다.
+              마트 영수증만 찍으면 식료품과 생필품이 함께 자동 등록됩니다.
             </p>
           </div>
 

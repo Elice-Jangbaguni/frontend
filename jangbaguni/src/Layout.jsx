@@ -29,7 +29,7 @@ export default function Layout({ children }) {
       <footer className="main-footer">
         <div className="footer-content">
           <p className="footer-project-title">
-            장바구니 : 영수증 OCR & AI 소비주기 예측 기반 1인 가구 생필품/식재료 관리 웹 서비스
+            장바구니 : 영수증 OCR & AI 소비주기 예측 기반 1인 가구 식재품/생필품 관리 웹 서비스
           </p>
           <p className="footer-team">Developed by Team 장바구니 (Frontend & Backend)</p>
           
