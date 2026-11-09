@@ -33,6 +33,13 @@
   width: 100%;
 }
 
+/* 라벨 + 상태 메세지 배치 */
+.label-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
 .form-label {
   font-size: 18px;
   font-weight: 700;
@@ -41,6 +48,19 @@
   margin-left: 4px;
 }
 
+/* 유효성 검사 결과 메세지 */
+.status-message {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-message.success {
+  color: #0088FF; /* 파란색 (긍정) */
+}
+
+.status-message.error {
+  color: #C1121F; /* 빨간색 (부정) */
+}
 .form-input {
   width: 100%;
   height: 64px;
@@ -71,7 +91,6 @@
   width: 100%;
 }
 
-/* ?? */
 .input-with-button .form-input {
   padding-right: 120px;
 }
@@ -89,10 +108,6 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
-}
-
-.check-btn:hover {
-  background-color: #0f1c30;
 }
 
 /* 생년월일 셀렉트 영역 */

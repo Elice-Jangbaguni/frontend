@@ -15,22 +15,93 @@ export default function SignupPage() {
     gender: '',
   });
 
+  // 유효성 검사 상태 및 메시지 관리
+  const [userIdStatus, setUserIdStatus] = useState({ isChecked: false, isSuccess: false, message: '' });
+  const [passwordStatus, setPasswordStatus] = useState({ isSuccess: false, message: '' });
+  const [passwordConfirmStatus, setPasswordConfirmStatus] = useState({ isSuccess: false, message: '' });
+
+  // 비밀번호 실시간 세부 정규식 검사 함수
+  const validatePassword = (pw) => {
+    if (!pw) return { isSuccess: false, message: '' };
+
+    // 1. 허용된 문자(영문, 숫자, !@#$) 외 다른 문자가 들어간 경우
+    const allowedCharsRegex = /^[A-Za-z0-9!@#$]+$/;
+    if (!allowedCharsRegex.test(pw)) {
+      return { isSuccess: false, message: '문자, 숫자, !@#$만 들어갈 수 있습니다.' };
+    }
+
+    // 2. 8글자 미만인 경우
+    if (pw.length < 8) {
+      return { isSuccess: false, message: '8글자 이상의 비밀번호를 입력해주세요.' };
+    }
+
+    // 3. 20자 초과인 경우
+    if (pw.length > 20) {
+      return { isSuccess: false, message: '20자 이내의 비밀번호를 입력해주세요.' };
+    }
+
+    // 모든 조건 만족
+    return { isSuccess: true, message: '' };
+  };
+
   // 입력값 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+
+    // 아이디 변경 시 중복 확인 상태 초기화
+    if (name === 'userId') {
+      setUserIdStatus({ isChecked: false, isSuccess: false, message: '' });
+    }
+
+    // 비밀번호 실시간 검사
+    if (name === 'password') {
+      const status = validatePassword(value);
+      setPasswordStatus(status);
+
+      // 비밀번호가 수정되면 비밀번호 확인도 실시간 재비교
+      if (updatedData.passwordConfirm) {
+        checkPasswordMatch(value, updatedData.passwordConfirm);
+      }
+    }
+
+    // 비밀번호 확인 실시간 검사
+    if (name === 'passwordConfirm') {
+      checkPasswordMatch(updatedData.password, value);
+    }
   };
 
-  // 아이디 중복 확인 버튼
+  // 비밀번호 일치 확인
+  const checkPasswordMatch = (pw, pwConfirm) => {
+    if (!pwConfirm) {
+      setPasswordConfirmStatus({ isSuccess: false, message: '' });
+    } else if (pw !== pwConfirm) {
+      setPasswordConfirmStatus({ isSuccess: false, message: '비밀번호가 일치하지 않습니다.' });
+    } else {
+      setPasswordConfirmStatus({ isSuccess: true, message: '비밀번호가 일치합니다.' });
+    }
+  };
+
+  // 아이디 중복 확인 버튼 클릭
   const handleCheckDuplicate = () => {
+    const idRegex = /^[a-zA-Z0-9]{4,12}$/;
+
     if (!formData.userId.trim()) {
-      alert('아이디를 입력해 주세요.');
+      setUserIdStatus({ isChecked: true, isSuccess: false, message: '아이디를 입력해 주세요.' });
       return;
     }
-    alert(`${formData.userId} - 중복 확인 기능 실행`);
+    if (!idRegex.test(formData.userId)) {
+      setUserIdStatus({ isChecked: true, isSuccess: false, message: '영문, 숫자 4~12자로 입력해 주세요.' });
+      return;
+    }
+
+    // 테스트 예시 ('seungmin' 입력 시 중복 처리)
+    if (formData.userId === 'seungmin') {
+      setUserIdStatus({ isChecked: true, isSuccess: false, message: '중복 아이디입니다.' });
+    } else {
+      setUserIdStatus({ isChecked: true, isSuccess: true, message: '사용 가능한 아이디 입니다.' });
+    }
   };
 
   // 년/월/일 드롭다운 옵션 생성
@@ -40,14 +111,20 @@ export default function SignupPage() {
 
   return (
     <Layout>
-      {/* 💥 h1 -> h2 로 변경 (LoginPage와 동일하게 통일) */}
       <h2 className="signup-title">회원가입</h2>
 
       <section className="signup-section">
         <form className="signup-form">
           {/* 아이디 */}
           <div className="form-group">
-            <label htmlFor="userId" className="form-label">아이디</label>
+            <div className="label-wrapper">
+              <label htmlFor="userId" className="form-label">아이디</label>
+              {userIdStatus.isChecked && (
+                <span className={`status-message ${userIdStatus.isSuccess ? 'success' : 'error'}`}>
+                  {userIdStatus.message}
+                </span>
+              )}
+            </div>
             <div className="input-with-button">
               <input
                 type="text"
@@ -56,7 +133,7 @@ export default function SignupPage() {
                 className="form-input"
                 value={formData.userId}
                 onChange={handleChange}
-                placeholder="아이디 (영문, 숫자만 가능)"
+                placeholder="영문, 숫자 포함 4~12자"
               />
               <button
                 type="button"
@@ -70,7 +147,14 @@ export default function SignupPage() {
 
           {/* 비밀번호 */}
           <div className="form-group">
-            <label htmlFor="password" className="form-label">비밀번호</label>
+            <div className="label-wrapper">
+              <label htmlFor="password" className="form-label">비밀번호</label>
+              {passwordStatus.message && (
+                <span className="status-message error">
+                  {passwordStatus.message}
+                </span>
+              )}
+            </div>
             <input
               type="password"
               id="password"
@@ -78,13 +162,20 @@ export default function SignupPage() {
               className="form-input"
               value={formData.password}
               onChange={handleChange}
-              placeholder="비밀번호 (문자, 숫자, 특수문자 포함 8~20자)"
+              placeholder="문자, 숫자, 특수문자(!,@,#,$) 포함 8~20자"
             />
           </div>
 
           {/* 비밀번호 확인 */}
           <div className="form-group">
-            <label htmlFor="passwordConfirm" className="form-label">비밀번호 확인</label>
+            <div className="label-wrapper">
+              <label htmlFor="passwordConfirm" className="form-label">비밀번호 확인</label>
+              {passwordConfirmStatus.message && (
+                <span className={`status-message ${passwordConfirmStatus.isSuccess ? 'success' : 'error'}`}>
+                  {passwordConfirmStatus.message}
+                </span>
+              )}
+            </div>
             <input
               type="password"
               id="passwordConfirm"
