@@ -6,10 +6,12 @@ export default function Layout({ children }) {
 
   const navigate = useNavigate();
 
-  const handleGoToHome = () => {
+  // 메인 이동
+  const handleGoToMain = () => {
     navigate('/');
   };
 
+  // 로그인 페이지 이동
   const handleGoToLogin = () => {
     navigate('/login');
   };
@@ -20,7 +22,7 @@ export default function Layout({ children }) {
       {/* 1. 헤더 그대로 넣기 */}
       <header className="main-header">
         <div className="header-left">
-          <div className="logo-box" onClick={handleGoToHome}>
+          <div className="logo-box" onClick={handleGoToMain}>
             <div className="logo-icon">🛒</div>
             <span className="logo-text">장바구니</span>
           </div>
