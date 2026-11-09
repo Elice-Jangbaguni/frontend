@@ -1,13 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Mainpage.css';
 
 export default function Layout({ children }) {
+
+  const navigate = useNavigate();
+
+  const handleGoToHome = () => {
+    navigate('/');
+  };
+
+  const handleGoToLogin = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="main-wrapper">
       
       {/* 1. 헤더 그대로 넣기 */}
       <header className="main-header">
         <div className="header-left">
-          <div className="logo-box">
+          <div className="logo-box" onClick={handleGoToHome}>
             <div className="logo-icon">🛒</div>
             <span className="logo-text">장바구니</span>
           </div>
@@ -15,7 +28,7 @@ export default function Layout({ children }) {
         </div>
 
         <div className="header-right">
-          <div className="login-text">로그인</div>
+          <div className="login-text" onClick={handleGoToLogin}>로그인</div>
           <div className="signup-text">회원가입</div>
         </div>
       </header>
