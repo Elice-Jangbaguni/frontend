@@ -16,10 +16,9 @@ export default function Layout({ children }) {
     navigate('/login');
   };
 
-  // 회원가입 페이지 이동
-  const handleGoToSignup = () => {
-    console.log('회원가입 페이지 이동');
-    navigate('/signup');
+  // 약관 동의 페이지 이동
+  const handleGoToTerms = () => {
+    navigate('/terms');
   };
 
   return (
@@ -37,8 +36,8 @@ export default function Layout({ children }) {
 
         <div className="header-right">
           <div className="login-text" onClick={handleGoToLogin}>로그인</div>
-          <div className="signup-text" onClick={handleGoToSignup}>
-            회원가입
+          <div className="signup-text" onClick={handleGoToTerms}>
+            회원 가입
           </div>
         </div>
       </header>
