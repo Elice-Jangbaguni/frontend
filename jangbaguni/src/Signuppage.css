@@ -7,6 +7,14 @@
   margin-bottom: 100px;
 }
 
+/* 헤더 및 스텝 영역 */
+.signup-header-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60px;
+}
+
 .signup-title {
   text-align: center;
   font-family: Pretendard;
@@ -14,15 +22,34 @@
   font-weight: 800;
   color: #121212;
   margin-top: 50px;
-  margin-bottom: 80px;
+  margin-bottom: 20px;
   letter-spacing: 2%;
+}
+
+/* 스텝 인디케이터 */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #a0a5b1;
+}
+
+.step-indicator .step.active {
+  color: #172A46;
+  font-weight: 700;
+}
+
+.step-arrow {
+  font-size: 12px;
+  color: #c4c8d0;
 }
 
 .signup-form {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 440px; /* 이미지 속 폼 너비 */
+  width: 440px;
   gap: 25px;
 }
 

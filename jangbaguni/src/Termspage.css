@@ -1,10 +1,18 @@
-/* 약관 동의 페이지 전체 영역 중앙 정렬 */
+/* 약관동의 페이지 전체 영역 중앙 정렬 및 배경 */
 .terms-section {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-bottom: 100px;
+  margin-bottom: 80px;
+}
+
+/* 헤더 및 스텝 영역 */
+.terms-header-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60px;
 }
 
 .terms-title {
@@ -14,15 +22,34 @@
   font-weight: 800;
   color: #121212;
   margin-top: 50px;
-  margin-bottom: 80px;
-  letter-spacing: -0.5px;
+  margin-bottom: 20px;
+  letter-spacing: 2%;
+}
+
+/* 스텝 인디케이터 */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #8E8E8E;
+}
+
+.step-indicator .step.active {
+  color: #172A46;
+  font-weight: 700;
+}
+
+.step-arrow {
+  font-size: 12px;
+  color: #8E8E8E;
 }
 
 .terms-form {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 440px;
+  width: 440px;
   gap: 25px;
 }
 
@@ -44,8 +71,7 @@
   border-radius: 10px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 0 24px; /* 👈 좌우 패딩 값 확인 */
+  padding: 0 24px;
   gap: 12px;
   font-size: 18px;
   font-weight: 600;
@@ -54,15 +80,17 @@
   transition: opacity 0.2s ease;
 }
 
-.all-check-icon {
-  width: 20px;
-  font-size: 20px;
-  color: #FEFEFE;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.all-agree-box:hover {
+  opacity: 0.95;
 }
 
+.all-check-icon {
+  width: 20px;
+  font-size: 18px;
+  color: #FEFEFE;
+}
+
+/* 약관 리스트 */
 .terms-list {
   list-style: none;
   padding: 0;
@@ -79,7 +107,6 @@
   padding: 0 24px;
 }
 
-/* 라벨 감싸는 영역 */
 .terms-label-wrapper {
   display: flex;
   align-items: center;
@@ -90,13 +117,10 @@
 
 /* 체크 아이콘 기본 */
 .check-icon {
-  width: 20px;  
+  width: 20px;
   font-size: 20px;
   color: #8E8E8E;
   transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* 체크 되었을 때 */
@@ -122,7 +146,42 @@
   color: #172A46;
 }
 
-/* 모달 배경 */
+/* 하단 카드 바 */
+.next-step-bar {
+  width: 100%;
+  height: 64px;
+  margin-top: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 비활성화 상태 */
+.next-step-bar.disabled {
+  background-color: #D9D9D9;
+  color: #595959;
+  cursor: not-allowed;
+}
+
+/* 활성화 상태 */
+.next-step-bar.enabled {
+  background-color: #172A46;
+  color: #FEFEFE;
+  cursor: pointer;
+}
+
+.next-arrow-icon {
+  font-size: 14px;
+}
+
+/* 모달 오버레이 및 본체 */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -134,12 +193,11 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
 }
 
 /* 모달 메인 박스 */
 .modal-container {
-  background-color: #ffffff;
+  background-color: #FEFEFE;
   width: 90%;
   max-width: 520px;
   max-height: 80vh;
@@ -155,7 +213,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #D9D9D9;
 }
 
 .modal-header h3 {
@@ -169,12 +227,8 @@
   background: none;
   border: none;
   font-size: 20px;
-  color: #888;
+  color: #595959;
   cursor: pointer;
-}
-
-.modal-close-btn:hover {
-  color: #111;
 }
 
 .modal-body {
@@ -186,36 +240,26 @@
 .modal-body pre {
   white-space: pre-wrap;
   font-family: 'Pretendard', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
-  color: #444;
+  color: #595959;
   margin: 0;
-  text-align: left;
 }
 
 .modal-footer {
   padding: 16px 24px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #D9D9D9;
   display: flex;
   justify-content: center;
 }
 
 .modal-confirm-btn {
   background-color: #172A46;
-  color: #fff;
+  color: #fefefe;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 14px 24px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
-}
-
-.modal-confirm-btn:hover {
-  opacity: 0.9;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }

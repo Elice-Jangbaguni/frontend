@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Signuppage.css';
-import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
+import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Layout from './Layout';
 
@@ -111,7 +111,14 @@ export default function SignupPage() {
 
   return (
     <Layout>
-      <h2 className="signup-title">회원가입</h2>
+      <div className="signup-header-area">
+        <h2 className="signup-title">이용약관 동의</h2>
+        <div className="step-indicator">
+          <span className="signup">Step 1/2 약관동의</span>
+          <FontAwesomeIcon icon={faCaretRight} className="step-arrow" />
+          <span className="step active">Step 2/2 정보입력</span>
+        </div>
+      </div>
 
       <section className="signup-section">
         <form className="signup-form">

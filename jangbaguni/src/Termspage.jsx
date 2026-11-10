@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faXmark, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate } from 'react-router-dom';
 import Layout from './Layout';
 import './Termspage.css';
 
-// 약관 더보기 클릭 시 보여줄 전문 데이터
+// 약관 전문 데이터
 const TERMS_DATA = {
   service: {
     title: '(필수) 서비스 이용 약관',
@@ -15,7 +16,7 @@ const TERMS_DATA = {
 1. 서비스는 영수증 OCR 기능을 통한 품목 자동 등록 및 소비 주기 알림을 제공합니다.
 2. AI가 예측한 유통기한 및 소비 주기는 참고용 데이터이며, 실제 식재료 상태의 최종 관리 책임은 이용자에게 있습니다.
 
-제3조 (이용자의 의 의무)
+제3조 (이용자의 의무)
 이용자는 타인의 정보 도용, 서비스 해킹, 허위 묶음 구매 모집 등의 행위를 해서는 안 됩니다.`
   },
   privacy: {
@@ -43,13 +44,14 @@ const TERMS_DATA = {
 };
 
 export default function TermsPage() {
+  const navigate = useNavigate();
+
   const [agreements, setAgreements] = useState({
     service: false,
     privacy: false,
     location: false,
   });
 
-  // 모달 상태 관리 (null이면 닫힘, key값이 들어가면 열림)
   const [modalKey, setModalKey] = useState(null);
 
   const handleToggle = (key) => {
@@ -69,15 +71,28 @@ export default function TermsPage() {
     });
   };
 
-  // 모달 열기/닫기 핸들러
+  // 필수 약관 동의 여부 검사
+  const isRequiredAgreed = agreements.service && agreements.privacy;
+
+  // 다음 단계 이동 (회원가입 폼으로 라우팅)
+  const handleNextStep = () => {
+    if (!isRequiredAgreed) return;
+    navigate('/signup'); 
+  };
+
   const openModal = (key) => setModalKey(key);
   const closeModal = () => setModalKey(null);
 
   return (
-    <Layout showFooter={false}>
-      <h2 className="terms-title">
-        이용약관 동의
-      </h2>
+    <Layout>
+      <div className="terms-header-area">
+        <h2 className="terms-title">이용약관 동의</h2>
+        <div className="step-indicator">
+          <span className="step active">Step 1/2 약관동의</span>
+          <FontAwesomeIcon icon={faCaretRight} className="step-arrow" />
+          <span className="step">Step 2/2 정보입력</span>
+        </div>
+      </div>
 
       <main className="terms-section">
         <div className="terms-form">
@@ -146,6 +161,15 @@ export default function TermsPage() {
               <span className="more-link" onClick={() => openModal('location')}>더보기</span>
             </li>
           </ul>
+
+          {/* 하단 네비게이션 바 */}
+          <div
+            className={`next-step-bar ${isRequiredAgreed ? 'enabled' : 'disabled'}`}
+            onClick={handleNextStep}
+          >
+            <span>다음 단계로 이동</span>
+            <FontAwesomeIcon icon={faCaretRight} className="next-arrow-icon" />
+          </div>
         </div>
       </main>
 
