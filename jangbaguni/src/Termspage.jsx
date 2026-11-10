@@ -84,7 +84,7 @@ export default function TermsPage() {
   const closeModal = () => setModalKey(null);
 
   return (
-    <Layout>
+    <Layout showFooter={false}>
       <div className="terms-header-area">
         <h2 className="terms-title">이용약관 동의</h2>
         <div className="step-indicator">

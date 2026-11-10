@@ -124,16 +124,38 @@
   gap: 2rem;
 }
 
-.login-text, .signup-text {
+.auth-text {
+  position: relative;
   font-size: 18px;
   font-weight: 600;
   color: #121212;
   cursor: pointer;
-  transition: color 0.2s;
+  padding-bottom: 2px;
+  user-select: none;
+  transition: color 0.2s ease, transform 0.2s ease, font-size 0.2s ease;
+  display: inline-block;
 }
 
-.login-text:hover, .signup-text:hover {
-  color: #C1121F;
+.auth-text.active {
+  color: #172A46;
+}
+
+.auth-text.active {
+  font-size: 19px; 
+  font-weight: 700; 
+  color: #172A46;
+}
+
+/* 활성화 상태일 때 밑줄 생성 */
+.auth-text.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #172A46;
+  animation: underlineSlide 0.2s ease-out forwards;
 }
 
 /* 배너 */
@@ -379,4 +401,8 @@
 
 .footer-link:hover {
   color: #38bdf8; 
+}
+
+html {
+  scrollbar-gutter: stable;
 }

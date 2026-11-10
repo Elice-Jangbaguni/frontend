@@ -110,7 +110,7 @@ export default function SignupPage() {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
-    <Layout>
+    <Layout showFooter={false}>
       <div className="signup-header-area">
         <h2 className="signup-title">이용약관 동의</h2>
         <div className="step-indicator">
