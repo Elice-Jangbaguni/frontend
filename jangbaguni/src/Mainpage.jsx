@@ -11,7 +11,7 @@ export default function MainPage() {
   const handleGoToLogin = () => {
     navigate('/login'); 
   };
-
+  
   return (
     <Layout>
       {/* 상단 다크 배너 */}
@@ -41,7 +41,7 @@ export default function MainPage() {
         </p>
 
         <div className="hero-action">
-          <button className="btn-start">
+          <button className="btn-start" onClick={handleGoToLogin}>
             장바구니 시작하기
           </button>
         </div>

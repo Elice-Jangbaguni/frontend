@@ -4,7 +4,7 @@ import './Loginpage.css';
 
 export default function LoginPage() {
   return (
-    <Layout>
+    <Layout showFooter={false}>
       {/* 타이틀 */}
       <h2 className="login-title">로그인</h2>
 
