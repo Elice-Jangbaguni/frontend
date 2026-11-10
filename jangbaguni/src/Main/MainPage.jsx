@@ -1,14 +1,25 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from './Layout';
-import './Mainpage.css';
+import './MainPage.css';
 
 export default function MainPage() {
+
+  const navigate = useNavigate();
+
+  // 로그인 페이지로 이동하는 핸들러
+  const handleGoToLogin = () => {
+    navigate('/login'); 
+  };
+  
   return (
     <Layout>
       {/* 상단 다크 배너 */}
       <div className="top-banner">
         <span>혼자 사는 집 식료품 & 생필품 관리, 고민된다면?</span>
-        <button className="banner-link">30초 만에 시작하기</button>
+        <button className="banner-link" onClick={handleGoToLogin}>
+          30초 만에 시작하기
+        </button>
       </div>
 
       {/* 메인 히어로 섹션 */}
@@ -30,7 +41,7 @@ export default function MainPage() {
         </p>
 
         <div className="hero-action">
-          <button className="btn-start">
+          <button className="btn-start" onClick={handleGoToLogin}>
             장바구니 시작하기
           </button>
         </div>
