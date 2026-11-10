@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { faCheck, faXmark, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from 'react-router-dom';
-import Layout from './Layout';
-import './Termspage.css';
+import Layout from '../Main/Layout';
+import './TermsPage.css';
 
 // 약관 전문 데이터
 const TERMS_DATA = {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from './Layout';
-import './Mainpage.css';
+import './MainPage.css';
 
 export default function MainPage() {
 

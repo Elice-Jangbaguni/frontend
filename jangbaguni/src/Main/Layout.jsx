@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './Mainpage.css';
+import './MainPage.css';
 
 export default function Layout({ children, showFooter = true }) {
 
@@ -8,9 +8,15 @@ export default function Layout({ children, showFooter = true }) {
 
   // 현재 경로 판별
   const isLoginPage = location.pathname === '/login';
-  // 약관동의(/terms) 또는 회원가입(/signup) 페이지일 때 회원가입 텍스트 활성화
   const isSignupPage = location.pathname === '/terms' || location.pathname === '/signup';
-  
+  const isProductsPage = location.pathname === '/products';
+  const isGroupBuyPage = location.pathname === '/groupbuy';
+
+
+  // localStorage 기반 Mock 로그인 상태
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const userName = localStorage.getItem('userName') || '회원';
+
   const navigate = useNavigate();
 
   // 메인 이동
@@ -28,6 +34,23 @@ export default function Layout({ children, showFooter = true }) {
     navigate('/terms');
   };
 
+  // 재고 관리 페이지 이동
+  const handleGoToProducts = () => {
+    navigate('/products');
+  };
+
+  // 공동 구매 페이지 이동
+  const handleGoToGroupBuy = () => {
+    navigate('/groupbuy');
+  };
+
+    // 로그아웃 버튼 클릭 이벤트
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userName');
+    navigate('/');
+  };
+
   return (
     <div className="main-wrapper">
       
@@ -41,11 +64,25 @@ export default function Layout({ children, showFooter = true }) {
           <nav className="main-nav"></nav>
         </div>
 
-        <div className="header-right">
-          <div className={`auth-text ${isLoginPage ? 'active' : ''}`} onClick={handleGoToLogin}>로그인</div>
-          <div className={`auth-text ${isSignupPage ? 'active' : ''}`} onClick={handleGoToTerms}>
-            회원 가입
+        {isLoggedIn && (
+          <div className="header-center">
+            <div className={`product ${isProductsPage ? 'active' : ''}`} onClick={handleGoToProducts}>재고 관리</div>
+            <div className={`groupbuy ${isGroupBuyPage ? 'active' : ''}`} onClick={handleGoToGroupBuy}>공동 구매</div>
           </div>
+        )}
+
+        <div className="header-right">
+          {isLoggedIn ? (
+            <>
+              <div className="user-name">{userName}님</div>
+              <div className="logout" onClick={handleLogout}>로그아웃</div>            
+            </>
+          ) : (
+            <>
+              <div className={`auth-text ${isLoginPage ? 'active' : ''}`} onClick={handleGoToLogin}>로그인</div>
+              <div className={`auth-text ${isSignupPage ? 'active' : ''}`} onClick={handleGoToTerms}>회원 가입</div>
+            </>
+          )}
         </div>
       </header>
 

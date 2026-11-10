@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import './Signuppage.css';
+import './SignUpPage.css';
 import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Layout from './Layout';
+import Layout from '../Main/Layout';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({

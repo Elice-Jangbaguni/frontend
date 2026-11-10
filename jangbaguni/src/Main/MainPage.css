@@ -118,6 +118,54 @@
   letter-spacing: -0.03em;
 }
 
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.product, .groupbuy, .user-name, .logout {
+  position: relative;
+  font-size: 18px;
+  font-weight: 600;
+  color: #121212;
+  cursor: pointer;
+  padding-bottom: 2px;
+  user-select: none;
+  transition: color 0.2s ease, transform 0.2s ease, font-size 0.2s ease;
+  display: inline-block;
+}
+
+.product.active, .groupbuy.active {
+  color: #172A46;
+}
+
+.product.active, .groupbuy.active {
+  font-size: 19px; 
+  font-weight: 700; 
+  color: #172A46;
+}
+
+/* 활성화 상태일 때 밑줄 생성 */
+.product.active::after, .groupbuy.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #172A46;
+  animation: underlineSlide 0.2s ease-out forwards;
+}
+
+.user-name {
+  color: #172A46
+}
+
+.logout {
+  color: #8E8E8E;
+}
+
 .header-right {
   display: flex;
   align-items: center;
