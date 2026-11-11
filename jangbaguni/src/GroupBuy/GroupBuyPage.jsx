@@ -1,9 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../Main/Layout';
 import './GroupBuyPage.css';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 
 // 하나의 단일 상품 더미 데이터
 const sampleProduct = {
@@ -20,6 +20,12 @@ const participatingList = Array(6).fill(sampleProduct);
 const neighborhoodList = Array(30).fill(sampleProduct);
 
 export default function GroupBuyPage() {
+
+  const navigate = useNavigate();
+
+  const handleToDetail = () => {
+    navigate('/groupbuy/detail'); 
+  };
 
   return (
     <Layout>
@@ -38,7 +44,7 @@ export default function GroupBuyPage() {
           <div className="card-box">
             <div className="card-slider">
               {participatingList.map((item, index) => (
-                <div className="groupbuy-card slider-card" key={`part-${index}`}>
+                <div className="groupbuy-card slider-card" key={`part-${index}`} onClick={handleToDetail}>
                   <div className="image-wrapper">
                     <span className="status-badge">{item.badge}</span>
                     <img src={item.imageUrl} alt={item.title} className="product-image" />
