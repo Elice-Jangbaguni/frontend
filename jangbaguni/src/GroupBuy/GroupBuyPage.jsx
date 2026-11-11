@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '../Main/Layout';
-import './GroupBuypage.css';
+import './GroupBuyPage.css';
 
 // 하나의 단일 상품 더미 데이터
 const sampleProduct = {
