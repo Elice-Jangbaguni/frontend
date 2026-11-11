@@ -18,6 +18,9 @@ const sampleProduct = {
 // 1개의 이미지/상품 정보만 가지고 목록 생성
 const participatingList = Array(6).fill(sampleProduct);
 const neighborhoodList = Array(30).fill(sampleProduct);
+import { useNavigate } from 'react-router-dom';
+import Layout from '../Main/Layout';
+import './GroupBuyPage.css';
 
 export default function GroupBuyPage() {
 
@@ -88,6 +91,7 @@ export default function GroupBuyPage() {
           </div>
         </section>
       </div>
+      <h2> 공동 구매 페이지 </h2>
     </Layout>
   );
 }
