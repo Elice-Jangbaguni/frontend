@@ -137,6 +137,44 @@
   letter-spacing: 2%;
 }
 
+/* 버튼 그룹 */
+.action-button-group {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* 수정 버튼 */
+.edit-btn {
+  flex: 1;
+  background-color: #172A46;
+  color: #fefefe;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* 삭제 버튼 */
+.delete-btn {
+  flex: 1;
+  background-color: #FFFFFF;
+  color: #C1121F;
+  border: 1.5px solid #C1121F;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 14px;
+  padding: 16px 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;}
+
 /* 채팅 버튼 */
 .chat-btn {
   width: 100%;

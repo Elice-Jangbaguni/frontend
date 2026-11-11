@@ -20,6 +20,18 @@ export default function GroupBuyDetailPage() {
 일단 편하게 연락 주세요`
   };
 
+  const handleEdit = () => {
+    alert('수정 페이지로 이동합니다.');
+  };
+
+  const handleDelete = () => {
+    alert('정말 삭제하시겠습니까?');
+  };
+
+  const handleChat = () => {
+    alert('채팅방으로 이동합니다.');
+  };
+
   return (
     <Layout>
       <div className="detail-area">
@@ -69,6 +81,14 @@ export default function GroupBuyDetailPage() {
               ))}
             </div>
 
+           <div className="action-button-group">
+              <button className="edit-btn" onClick={handleEdit}>
+                수정
+              </button>
+              <button className="delete-btn" onClick={handleDelete}>
+                삭제
+              </button>
+            </div> 
             <button className="chat-btn">
               채팅
             </button>
