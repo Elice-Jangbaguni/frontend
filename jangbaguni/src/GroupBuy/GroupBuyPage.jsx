@@ -74,7 +74,7 @@ export default function GroupBuyPage() {
           <div className="card-box">
             <div className="card-grid">
               {neighborhoodList.map((item, index) => (
-                <div className="groupbuy-card" key={`neigh-${index}`}>
+                <div className="groupbuy-card" key={`neigh-${index}`}  onClick={handleToDetail}>
                   <div className="image-wrapper">
                     <span className="status-badge">{item.badge}</span>
                     <img src={item.imageUrl} alt={item.title} className="product-image" />

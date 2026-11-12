@@ -164,7 +164,7 @@
 /* 삭제 버튼 */
 .delete-btn {
   flex: 1;
-  background-color: #FFFFFF;
+  background-color: #fefefe;
   color: #C1121F;
   border: 1.5px solid #C1121F;
   font-family: 'Pretendard', sans-serif;
@@ -179,7 +179,7 @@
 .chat-btn {
   width: 100%;
   height: 64px;
-  background-color: #1E293B;
+  background-color: #172A46;
   color: #fefefe;
   font-family: 'Pretendard', sans-serif;
   font-size: 20px;
