@@ -1,0 +1,164 @@
+/* 모달 오버레이 및 본체 */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.modal-container {
+  background-color: #FEFEFE;
+  width: 90%;
+  max-width: 520px;
+  max-height: 85vh;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 23px 25px;
+  border-bottom: 1px solid #D9D9D9;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #172A46;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #595959;
+  cursor: pointer;
+}
+
+.modal-close-btn:hover {
+  color: #172A46;
+}
+
+.modal-body {
+  padding: 25px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-footer {
+  padding: 23px 25px;
+  border-top: 1px solid #D9D9D9;
+  display: flex;
+  justify-content: center;
+}
+
+.modal-confirm-btn {
+  width: 100%;
+  height: 50px;
+  background-color: #172A46;
+  color: #FEFEFE;
+  font-family: 'Pretendard', sans-serif;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+/* 라벨 + 상태 메세지 배치 */
+.label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 17px;
+  font-weight: 700;
+  color: #172A46;
+  text-align: left;
+}
+
+.status-message {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-message.success {
+  color: #0088FF;
+}
+
+/* 동네 배지 */
+.neighborhood-badge {
+  display: inline-block;
+  border: 1.5px solid #C1121F;
+  color: #C1121F;
+  background-color: #FEFEFE;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 10px;
+}
+
+/* 인풋 필드 */
+.form-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 20px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  border: 1px solid #8E8E8E;
+  border-radius: 10px;
+  background-color: #FEFEFE;
+  outline: none;
+  box-sizing: border-box;
+  color: #595959;
+  transition: border-color 0.2s ease;
+  letter-spacing: 10%;
+}
+
+/* 설명 텍스트에어리어 */
+.form-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 16px 20px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  border: 1px solid #8E8E8E;
+  border-radius: 10px;
+  background-color: #FEFEFE;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  color: #595959;
+  transition: border-color 0.2s ease;
+  letter-spacing: 10%;
+}
+
