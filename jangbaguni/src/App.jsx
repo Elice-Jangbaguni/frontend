@@ -6,6 +6,8 @@ import SignupPage from './Auth/SignUpPage.jsx';
 import TermsPage from './Auth/TermsPage.jsx';
 import ProductsPage from './Products/ProductsPage.jsx';
 import GroupBuyPage from './GroupBuy/GroupBuyPage.jsx';
+import GroupBuyDetailPage from './GroupBuy/GroupBuyDetailPage.jsx'; 
+
 
 export default function App() {
   return (
@@ -17,6 +19,7 @@ export default function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/groupbuy" element={<GroupBuyPage />} />
+        <Route path="/groupbuy/detail" element={<GroupBuyDetailPage />} />
 
       </Routes>
     </BrowserRouter>

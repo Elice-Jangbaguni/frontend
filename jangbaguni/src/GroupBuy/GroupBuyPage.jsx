@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../Main/Layout';
 import './GroupBuyPage.css';
+import CreateGroupBuyModal from './CreateGroupBuyModal';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 
 // 하나의 단일 상품 더미 데이터
 const sampleProduct = {
@@ -20,6 +21,12 @@ const participatingList = Array(6).fill(sampleProduct);
 const neighborhoodList = Array(30).fill(sampleProduct);
 
 export default function GroupBuyPage() {
+  const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleToDetail = () => {
+    navigate('/groupbuy/detail'); 
+  };
 
   return (
     <Layout>
@@ -27,7 +34,7 @@ export default function GroupBuyPage() {
         {/* 1. 참여 중인 공구 헤더 & 추가 버튼 */}
         <div className="section-header-area">
           <h2 className="section-title">참여 중인 공구</h2>
-          <button className="create-btn">
+          <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
             <FontAwesomeIcon icon={faPlus} />
             공구 열기
           </button>
@@ -38,7 +45,7 @@ export default function GroupBuyPage() {
           <div className="card-box">
             <div className="card-slider">
               {participatingList.map((item, index) => (
-                <div className="groupbuy-card slider-card" key={`part-${index}`}>
+                <div className="groupbuy-card slider-card" key={`part-${index}`} onClick={handleToDetail}>
                   <div className="image-wrapper">
                     <span className="status-badge">{item.badge}</span>
                     <img src={item.imageUrl} alt={item.title} className="product-image" />
@@ -68,7 +75,7 @@ export default function GroupBuyPage() {
           <div className="card-box">
             <div className="card-grid">
               {neighborhoodList.map((item, index) => (
-                <div className="groupbuy-card" key={`neigh-${index}`}>
+                <div className="groupbuy-card" key={`neigh-${index}`} onClick={handleToDetail}>
                   <div className="image-wrapper">
                     <span className="status-badge">{item.badge}</span>
                     <img src={item.imageUrl} alt={item.title} className="product-image" />
@@ -89,6 +96,12 @@ export default function GroupBuyPage() {
         </section>
       </div>
       <h2> 공동 구매 페이지 </h2>
+
+      {/* 공구 작성 모달 팝업 */}
+      <CreateGroupBuyModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
     </Layout>
   );
 }
