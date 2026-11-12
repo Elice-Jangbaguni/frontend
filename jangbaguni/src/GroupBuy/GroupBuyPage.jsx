@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../Main/Layout';
 import './GroupBuyPage.css';
 import CreateGroupBuyModal from './CreateGroupBuyModal';
+import ChatFloatingButton from '../Chat/ChatFloatingButton';
+import ChatModal from '../Chat/ChatModal';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -23,6 +25,7 @@ const neighborhoodList = Array(30).fill(sampleProduct);
 export default function GroupBuyPage() {
   const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleToDetail = () => {
     navigate('/groupbuy/detail'); 
@@ -101,6 +104,13 @@ export default function GroupBuyPage() {
       <CreateGroupBuyModal 
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 
+      />
+
+      {/* 좌측 하단 채팅 플로팅 버튼 & 채팅 목록 모달 */}
+      <ChatFloatingButton onClick={() => setIsChatOpen(true)} />
+      <ChatModal 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
       />
     </Layout>
   );

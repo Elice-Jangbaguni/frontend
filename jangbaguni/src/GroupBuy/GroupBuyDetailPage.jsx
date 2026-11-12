@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import Layout from '../Main/Layout';
 import './GroupBuyDetailPage.css';
 import EditGroupBuyModal from './EditGroupBuyModal';
+import ChatFloatingButton from '../Chat/ChatFloatingButton';
+import ChatModal from '../Chat/ChatModal';
 
 export default function GroupBuyDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedChatRoom, setSelectedChatRoom] = useState(null);
 
   const [detailData, setDetailData] = useState({
+    id: 99,
     neighborhood: '서울특별시 성북구',
     badge: '모집중 (1/2명)',
     title: '토레타 이온음료 340ml',
@@ -43,8 +48,24 @@ export default function GroupBuyDetailPage() {
     alert('정말 삭제하시겠습니까?');
   };
 
+  // 본문 '채팅' 버튼 클릭 -> 해당 상품 1:1 채팅방으로 바로 진입
   const handleChat = () => {
-    alert('채팅방으로 이동합니다.');
+    setSelectedChatRoom({
+      id: detailData.id,
+      productTitle: detailData.title,
+      partnerName: detailData.sellerName,
+      lastMessage: '',
+      updatedAt: '방금 전',
+      unreadCount: 0,
+      status: '모집중',
+    });
+    setIsChatOpen(true);
+  };
+
+  // 좌측 하단 플로팅 버튼 클릭 -> 전체 채팅방 목록으로 진입
+  const handleOpenChatList = () => {
+    setSelectedChatRoom(null);
+    setIsChatOpen(true);
   };
 
   return (
@@ -117,6 +138,14 @@ export default function GroupBuyDetailPage() {
         onClose={() => setIsEditModalOpen(false)}
         initialData={detailData}
         onSubmit={handleUpdateSubmit}
+      />
+
+      {/* 좌측 하단 채팅 플로팅 버튼 & 모달 */}
+      <ChatFloatingButton onClick={handleOpenChatList} />
+      <ChatModal 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        initialRoom={selectedChatRoom}
       />
     </Layout>
   );
