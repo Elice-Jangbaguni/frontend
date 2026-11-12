@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '../Main/Layout';
 import './GroupBuyDetailPage.css';
+import EditGroupBuyModal from './EditGroupBuyModal';
 
 export default function GroupBuyDetailPage() {
-  const detailData = {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [detailData, setDetailData] = useState({
+    neighborhood: '서울특별시 성북구',
     badge: '모집중 (1/2명)',
     title: '토레타 이온음료 340ml',
     price: '12,180',
@@ -18,10 +22,21 @@ export default function GroupBuyDetailPage() {
 
 성신여대 재학생 분들이면 더 좋을 것 같습니다 !! ^^
 일단 편하게 연락 주세요`
-  };
+  });
 
   const handleEdit = () => {
-    alert('수정 페이지로 이동합니다.');
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateSubmit = (updatedForm) => {
+    setDetailData((prev) => ({
+      ...prev,
+      title: updatedForm.title,
+      price: updatedForm.price,
+      location: updatedForm.location,
+      badge: updatedForm.capacity ? `모집중 (1/${updatedForm.capacity}명)` : prev.badge,
+      description: updatedForm.description
+    }));
   };
 
   const handleDelete = () => {
@@ -81,7 +96,7 @@ export default function GroupBuyDetailPage() {
               ))}
             </div>
 
-           <div className="action-button-group">
+            <div className="action-button-group">
               <button className="edit-btn" onClick={handleEdit}>
                 수정
               </button>
@@ -89,12 +104,20 @@ export default function GroupBuyDetailPage() {
                 삭제
               </button>
             </div> 
-            <button className="chat-btn">
+            <button className="chat-btn" onClick={handleChat}>
               채팅
             </button>
           </div>
         </div>
       </div>
+
+      {/* 공구 수정 모달 팝업 */}
+      <EditGroupBuyModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        initialData={detailData}
+        onSubmit={handleUpdateSubmit}
+      />
     </Layout>
   );
 }

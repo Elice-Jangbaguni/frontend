@@ -112,7 +112,7 @@ export default function SignupPage() {
   return (
     <Layout showFooter={false}>
       <div className="signup-header-area">
-        <h2 className="signup-title">이용약관 동의</h2>
+        <h2 className="signup-title">정보 입력</h2>
         <div className="step-indicator">
           <span className="signup">Step 1/2 약관동의</span>
           <FontAwesomeIcon icon={faCaretRight} className="step-arrow" />
