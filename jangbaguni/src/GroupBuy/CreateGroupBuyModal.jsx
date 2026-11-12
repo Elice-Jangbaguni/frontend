@@ -68,7 +68,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               type="text"
               id="title"
               name="title"
-              className="write-input"
+              className="form-input"
               value={formData.title}
               onChange={handleChange}
               placeholder="제품명을 입력해주세요"
@@ -84,7 +84,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               type="text"
               id="price"
               name="price"
-              className="write-input"
+              className="form-input"
               value={formData.price}
               onChange={handleChange}
               placeholder="1인당 부담금을 입력해주세요"
@@ -103,7 +103,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               type="text"
               id="location"
               name="location"
-              className="write-input"
+              className="form-input"
               value={formData.location}
               onChange={handleChange}
               placeholder="픽업 장소를 입력해주세요"
@@ -120,7 +120,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               id="capacity"
               name="capacity"
               min="2"
-              className="write-input"
+              className="form-input"
               value={formData.capacity}
               onChange={handleChange}
               placeholder="모집 인원을 입력해주세요."
@@ -135,7 +135,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
             <textarea
               id="description"
               name="description"
-              className="write-textarea"
+              className="form-textarea"
               value={formData.description}
               onChange={handleChange}
               placeholder="제품명, 공구 방식, 연락 수단 등 공구 정보를 자세히 기재해주세요."
