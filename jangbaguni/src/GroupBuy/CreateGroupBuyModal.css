@@ -114,6 +114,10 @@
   color: #0088FF;
 }
 
+.status-message.error {
+  color: #C1121F;
+}
+
 /* 동네 배지 */
 .neighborhood-badge {
   display: inline-block;
@@ -126,13 +130,15 @@
   border-radius: 10px;
 }
 
+/* 삭제 */
 /* 인풋 필드 */
-.form-input {
+.write-input {
   width: 100%;
   height: 52px;
   padding: 0 20px;
   font-family: 'Pretendard', sans-serif;
   font-size: 15px;
+  font-weight: 600;
   border: 1px solid #8E8E8E;
   border-radius: 10px;
   background-color: #FEFEFE;
@@ -144,12 +150,13 @@
 }
 
 /* 설명 텍스트에어리어 */
-.form-textarea {
+.write-textarea {
   width: 100%;
   min-height: 130px;
   padding: 16px 20px;
   font-family: 'Pretendard', sans-serif;
   font-size: 15px;
+  font-weight: 600;
   line-height: 1.5;
   border: 1px solid #8E8E8E;
   border-radius: 10px;
@@ -162,3 +169,41 @@
   letter-spacing: 10%;
 }
 
+/* 수정 */
+/* 인풋 필드 */
+.edit-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 20px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid #8E8E8E;
+  border-radius: 10px;
+  background-color: #FEFEFE;
+  outline: none;
+  box-sizing: border-box;
+  color: #121212;
+  transition: border-color 0.2s ease;
+  letter-spacing: 10%;
+}
+
+/* 설명 텍스트에어리어 */
+.edit-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 16px 20px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  border: 1px solid #8E8E8E;
+  border-radius: 10px;
+  background-color: #FEFEFE;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  color: #121212;
+  transition: border-color 0.2s ease;
+  letter-spacing: 10%;
+}
