@@ -13,6 +13,7 @@ import {
 
 import Layout from '../Main/Layout';
 import './ProductsPage.css';
+import ReceiptOCRModal from './ReceiptOCRModal';
 
 // 화면 디자인 확인용 임시 데이터
 
@@ -66,6 +67,7 @@ const products = [
 
 export default function ProductsPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [ocrModalOpen, setOcrModalOpen] = useState(false);
 
   return (
     <Layout>
@@ -215,6 +217,10 @@ export default function ProductsPage() {
             <button
               type="button"
               className="products-upload-option"
+              onClick={() => {
+                setUploadOpen(false);
+                setOcrModalOpen(true);
+              }}
             >
               <span className="products-upload-folder">
                 <FolderOpen size={30} strokeWidth={2.2} />
@@ -242,6 +248,12 @@ export default function ProductsPage() {
         </button>
 
       </div>
+
+      {ocrModalOpen && (
+        <ReceiptOCRModal
+          onClose={() => setOcrModalOpen(false)}
+        />
+      )}
     </Layout>
   );
 }
