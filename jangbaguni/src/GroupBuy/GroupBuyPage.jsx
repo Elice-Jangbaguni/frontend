@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../Main/Layout';
 import './GroupBuyPage.css';
+import CreateGroupBuyModal from './CreateGroupBuyModal';
+import ChatFloatingButton from '../Chat/ChatFloatingButton';
+import ChatModal from '../Chat/ChatModal';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -20,8 +23,9 @@ const participatingList = Array(6).fill(sampleProduct);
 const neighborhoodList = Array(30).fill(sampleProduct);
 
 export default function GroupBuyPage() {
-
   const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleToDetail = () => {
     navigate('/groupbuy/detail'); 
@@ -33,7 +37,7 @@ export default function GroupBuyPage() {
         {/* 1. 참여 중인 공구 헤더 & 추가 버튼 */}
         <div className="section-header-area">
           <h2 className="section-title">참여 중인 공구</h2>
-          <button className="create-btn">
+          <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
             <FontAwesomeIcon icon={faPlus} />
             공구 열기
           </button>
@@ -74,7 +78,7 @@ export default function GroupBuyPage() {
           <div className="card-box">
             <div className="card-grid">
               {neighborhoodList.map((item, index) => (
-                <div className="groupbuy-card" key={`neigh-${index}`}  onClick={handleToDetail}>
+                <div className="groupbuy-card" key={`neigh-${index}`} onClick={handleToDetail}>
                   <div className="image-wrapper">
                     <span className="status-badge">{item.badge}</span>
                     <img src={item.imageUrl} alt={item.title} className="product-image" />
@@ -95,6 +99,19 @@ export default function GroupBuyPage() {
         </section>
       </div>
       <h2> 공동 구매 페이지 </h2>
+
+      {/* 공구 작성 모달 팝업 */}
+      <CreateGroupBuyModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
+
+      {/* 좌측 하단 채팅 플로팅 버튼 & 채팅 목록 모달 */}
+      <ChatFloatingButton onClick={() => setIsChatOpen(true)} />
+      <ChatModal 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+      />
     </Layout>
   );
 }
