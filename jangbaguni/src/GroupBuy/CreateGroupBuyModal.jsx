@@ -23,6 +23,28 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
     }));
   };
 
+  // 1인당 부담금: 숫자만 추출 -> 천 단위 콤마 + '원' 자동 부착
+  const handlePriceChange = (e) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    const formattedValue = numericValue
+      ? `${Number(numericValue).toLocaleString("ko-KR")}원`
+      : "";
+
+    setFormData((prev) => ({
+      ...prev,
+      price: formattedValue
+    }));
+  };
+
+  // 모집 인원: 숫자만 입력되도록 처리
+  const handleCapacityChange = (e) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    setFormData((prev) => ({
+      ...prev,
+      capacity: numericValue
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title.trim()) {
@@ -71,7 +93,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               className="write-input"
               value={formData.title}
               onChange={handleChange}
-              placeholder="제품명을 입력해주세요"
+              placeholder="제품명을 입력해주세요."
             />
           </div>
 
@@ -82,12 +104,25 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
             </div>
             <input
               type="text"
+              inputMode="numeric"
               id="price"
               name="price"
               className="write-input"
               value={formData.price}
-              onChange={handleChange}
-              placeholder="1인당 부담금을 입력해주세요"
+              onChange={handlePriceChange}
+              placeholder="1인당 부담금을 입력해주세요."
+
+              onKeyDown={(e) => {
+                if (e.key === 'Backspace' && formData.price.endsWith('원')) {
+                  e.preventDefault();
+                  const withoutWon = formData.price.slice(0, -1).replace(/[^0-9]/g, "");
+                  const nextDigits = withoutWon.slice(0, -1);
+                  setFormData((prev) => ({
+                    ...prev,
+                    price: nextDigits ? `${Number(nextDigits).toLocaleString("ko-KR")}원` : ""
+                  }));
+                }
+              }}
             />
           </div>
 
@@ -106,7 +141,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               className="write-input"
               value={formData.location}
               onChange={handleChange}
-              placeholder="픽업 장소를 입력해주세요"
+              placeholder="픽업 장소를 입력해주세요."
             />
           </div>
 
@@ -116,13 +151,13 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               <label htmlFor="capacity" className="form-label">모집 인원 (명)</label>
             </div>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               id="capacity"
               name="capacity"
-              min="2"
               className="write-input"
               value={formData.capacity}
-              onChange={handleChange}
+              onChange={handleCapacityChange}
               placeholder="모집 인원을 입력해주세요."
             />
           </div>

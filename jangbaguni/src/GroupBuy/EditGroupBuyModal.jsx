@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './CreateGroupBuyModal.css'; // 기존 작성 모달 CSS 재사용
+import './CreateGroupBuyModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
@@ -13,10 +13,15 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
     description: ''
   });
 
+  // 숫자만 추출해 천 단위 콤마 + '원' 형태로 변환하는 헬퍼 함수
+  const formatPrice = (value) => {
+    const numericValue = String(value ?? '').replace(/[^0-9]/g, '');
+    return numericValue ? `${Number(numericValue).toLocaleString('ko-KR')}원` : '';
+  };
+
   // 모달이 열릴 때 기존 상세 게시글 데이터를 폼에 채워 넣음
   useEffect(() => {
     if (isOpen && initialData) {
-      // '모집중 (1/2명)' 문자열에서 숫자 '2' 추출 (없을 경우 기본값 처리)
       const parsedCapacity = initialData.badge
         ? initialData.badge.replace(/.*\/(\d+)명.*/, '$1')
         : '';
@@ -24,7 +29,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
       setFormData({
         neighborhood: initialData.neighborhood || '서울특별시 성북구',
         title: initialData.title || '',
-        price: initialData.price || '',
+        price: formatPrice(initialData.price),
         location: initialData.location || '',
         capacity: initialData.capacity || parsedCapacity,
         description: initialData.description || ''
@@ -39,6 +44,23 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
     setFormData((prev) => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // 1인당 부담금: 숫자만 추출 -> 천 단위 콤마 + '원' 자동 부착
+  const handlePriceChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      price: formatPrice(e.target.value)
+    }));
+  };
+
+  // 모집 인원: 숫자만 입력되도록 처리
+  const handleCapacityChange = (e) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+    setFormData((prev) => ({
+      ...prev,
+      capacity: numericValue
     }));
   };
 
@@ -92,8 +114,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
               name="title"
               className="edit-input"
               value={formData.title}
-              onChange={handleChange}
-              placeholder="제품명을 입력해주세요"
+              readOnly
             />
           </div>
 
@@ -104,12 +125,24 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
             </div>
             <input
               type="text"
+              inputMode="numeric"
               id="edit-price"
               name="price"
               className="edit-input"
               value={formData.price}
-              onChange={handleChange}
-              placeholder="1인당 부담금을 입력해주세요"
+              onChange={handlePriceChange}
+              placeholder="1인당 부담금을 입력해주세요."
+              onKeyDown={(e) => {
+                if (e.key === 'Backspace' && formData.price.endsWith('원')) {
+                  e.preventDefault();
+                  const withoutWon = formData.price.slice(0, -1).replace(/[^0-9]/g, '');
+                  const nextDigits = withoutWon.slice(0, -1);
+                  setFormData((prev) => ({
+                    ...prev,
+                    price: nextDigits ? `${Number(nextDigits).toLocaleString('ko-KR')}원` : ''
+                  }));
+                }
+              }}
             />
           </div>
 
@@ -125,7 +158,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
               className="edit-input"
               value={formData.location}
               onChange={handleChange}
-              placeholder="픽업 장소를 입력해주세요"
+              placeholder="픽업 장소를 입력해주세요."
             />
           </div>
 
@@ -135,13 +168,13 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
               <label htmlFor="edit-capacity" className="form-label">모집 인원 (명)</label>
             </div>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               id="edit-capacity"
               name="capacity"
-              min="2"
               className="edit-input"
               value={formData.capacity}
-              onChange={handleChange}
+              onChange={handleCapacityChange}
               placeholder="모집 인원을 입력해주세요."
             />
           </div>
