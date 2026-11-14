@@ -1,85 +1,10 @@
-/* 로그인 페이지 전체 영역 중앙 정렬 및 배경 */
-.login-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 150px;
-}
+/* 로그인 페이지 전용 스타일 (공통 인증 레이아웃 및 폼 스타일은 MainPage.css에서 관리) */
 
-.login-title {
-  text-align: center;
-  font-family: Pretendard;;
-  font-size: 55px;
-  font-weight: 800;
-  color: #121212;
-  margin-top: 50px;
-  margin-bottom: 80px;
-  letter-spacing: 2%;
-}
-
-/* 폼 컨테이너 */
+/* 로그인 폼 내부 요소 간격 및 제출 버튼 여백 */
 .login-form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 440px; /* 이미지 속 폼 너비 */
-  gap: 25px;
+  gap: 20px;
 }
 
-/* 입력 필드 공통 스타일 */
-.id-field,
-.pw-field {
-  width: 100%;
-  height: 64px;
-  padding: 0 24px;
-  font-size: 18px;
-  border: 1px solid #8E8E8E;
-  border-radius: 10px;
-  background-color: #FEFEFE;
-  outline: none;
-  box-sizing: border-box;
-  color: #121212;
-  letter-spacing: 10%;
-  transition: border-color 0.2s ease;
-}
-
-.id-field::placeholder,
-.pw-field::placeholder {
-  color: #595959;
-}
-
-.id-field:focus,
-.pw-field:focus {
-  border-color: #C1121F;
-}
-
-/* 로그인 버튼 */
-.login-btn {
-  width: 100%;
-  height: 64px;
-  margin-top: 40px;
-  background-color: #172A46;
-  color: #FEFEFE;
-  border: none;
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-
-/* 회원가입 버튼 */
-.signup-btn {
-  width: 100%;
-  height: 64px;
-  background-color: #121212; /* 이미지의 검은색 계열 */
-  color: #FEFEFE;
-  border: none;
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.login-submit-btn {
+  margin-top: 10px;
 }

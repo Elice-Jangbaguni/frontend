@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import './CreateGroupBuyModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import './CreateGroupBuyModal.css';
 
 export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubmit }) {
+  // 공구 수정 입력 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
     neighborhood: '서울특별시 성북구',
     title: '',
@@ -13,13 +14,13 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
     description: ''
   });
 
-  // 숫자만 추출해 천 단위 콤마 + '원' 형태로 변환하는 헬퍼 함수
+  // 숫자 추출 후 천 단위 콤마 및 '원' 부착 헬퍼
   const formatPrice = (value) => {
     const numericValue = String(value ?? '').replace(/[^0-9]/g, '');
     return numericValue ? `${Number(numericValue).toLocaleString('ko-KR')}원` : '';
   };
 
-  // 모달이 열릴 때 기존 상세 게시글 데이터를 폼에 채워 넣음
+  // 모달 열릴 때 기존 상세 게시글 데이터 반영
   useEffect(() => {
     if (isOpen && initialData) {
       const parsedCapacity = initialData.badge
@@ -39,6 +40,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
 
   if (!isOpen) return null;
 
+  // 일반 텍스트 입력 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -47,7 +49,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
     }));
   };
 
-  // 1인당 부담금: 숫자만 추출 -> 천 단위 콤마 + '원' 자동 부착
+  // 1인당 부담금 포맷 적용
   const handlePriceChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -55,7 +57,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
     }));
   };
 
-  // 모집 인원: 숫자만 입력되도록 처리
+  // 모집 인원 숫자만 입력 처리
   const handleCapacityChange = (e) => {
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setFormData((prev) => ({
@@ -64,6 +66,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
     }));
   };
 
+  // 공구 수정 제출 핸들러
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title.trim()) {
@@ -100,7 +103,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
             </div>
           </div>
 
-          {/* 제품명 */}
+          {/* 제품명 (수정 불가) */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="edit-title" className="form-label">제품명</label>

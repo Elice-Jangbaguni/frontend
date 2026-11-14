@@ -1,22 +1,19 @@
-
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Trash2,
-  TriangleAlert,
-  ShoppingCart,
-  Search,
-  FolderOpen,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
-
+  faTrashCan,
+  faTriangleExclamation,
+  faCartShopping,
+  faMagnifyingGlass,
+  faFolderOpen,
+  faChevronDown,
+  faChevronUp,
+} from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
-import './ProductsPage.css';
 import ReceiptOCRModal from './ReceiptOCRModal';
+import './ProductsPage.css';
 
-// 화면 디자인 확인용 임시 데이터
-
+// 재고 품목 더미 데이터
 const products = [
   {
     product_id: 1,
@@ -66,152 +63,143 @@ const products = [
 ];
 
 export default function ProductsPage() {
+  // 영수증 업로드 메뉴 및 OCR 모달 상태 관리
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
 
   return (
     <Layout>
-      <main className="products-page">
+      <main className="page-container products-page">
+        {/* 재고 알림 헤더 */}
+        <div className="page-section-header">
+          <h2 className="page-section-title">재고 알림</h2>
+        </div>
 
         {/* 상단 요약 카드 */}
-        <section className="products-summary">
+        <section className="products-section">
+          <div className="surface-box">
+            <div className="products-summary">
+              <div className="products-summary-card summary-expired">
+                <div className="products-summary-content">
+                  <p>소비기한 지남</p>
+                  <h2>품목 1개</h2>
+                  <span>즉시 확인 필요</span>
+                </div>
+                <FontAwesomeIcon className="products-summary-icon" icon={faTrashCan} />
+              </div>
 
-          <div className="products-summary-card summary-expired">
-            <div className="products-summary-content">
-              <p>소비기한 지남</p>
-              <h2>품목 1개</h2>
-              <span>즉시 확인 필요</span>
+              <div className="products-summary-card summary-warning">
+                <div className="products-summary-content">
+                  <p>소비기한 임박</p>
+                  <h2>품목 1개</h2>
+                  <span>소비 권장</span>
+                </div>
+                <FontAwesomeIcon className="products-summary-icon" icon={faTriangleExclamation} />
+              </div>
+
+              <div className="products-summary-card summary-ai">
+                <div className="products-summary-content">
+                  <p>AI 소진 예측</p>
+                  <h2>키친타올</h2>
+                  <span>이웃과 공구 추천</span>
+                </div>
+                <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
+              </div>
+
+              <div className="products-summary-card summary-ai">
+                <div className="products-summary-content">
+                  <p>AI 소진 예측</p>
+                  <h2>세제</h2>
+                  <span>이웃과 공구 추천</span>
+                </div>
+                <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
+              </div>
             </div>
-            <Trash2 className="products-summary-icon" />
-          </div>
-
-          <div className="products-summary-card summary-warning">
-            <div className="products-summary-content">
-              <p>소비기한 임박</p>
-              <h2>품목 1개</h2>
-              <span>소비 권장</span>
-            </div>
-            <TriangleAlert className="products-summary-icon" />
-          </div>
-
-          <div className="products-summary-card summary-ai">
-            <div className="products-summary-content">
-              <p>AI 소진 예측</p>
-              <h2>키친타올</h2>
-              <span>이웃과 공구 추천</span>
-            </div>
-            <ShoppingCart className="products-summary-icon" />
-          </div>
-
-          <div className="products-summary-card summary-ai">
-            <div className="products-summary-content">
-              <p>AI 소진 예측</p>
-              <h2>세제</h2>
-              <span>이웃과 공구 추천</span>
-            </div>
-            <ShoppingCart className="products-summary-icon" />
-          </div>
-
-        </section>
-
-        {/* 카테고리 및 검색 */}
-        <section className="products-controls">
-          <div className="products-tabs">
-            <button
-              type="button"
-              className="products-tab products-tab-active"
-            >
-              전체 (5)
-            </button>
-
-            <button type="button" className="products-tab">
-              식료품 (3)
-            </button>
-
-            <button type="button" className="products-tab">
-              생필품 (2)
-            </button>
-          </div>
-
-          <div className="products-search-box">
-            <Search size={24} className="products-search-icon" />
-            <input
-              type="search"
-              className="products-search"
-              placeholder="품목 검색"
-              aria-label="품목 검색"
-              readOnly
-            />
           </div>
         </section>
 
-        {/* 상품 목록 */}
-        <section className="products-list">
-          <table className="products-table">
+        {/* 재고 관리 헤더 */}
+        <div className="page-section-header">
+          <h2 className="page-section-title">재고 관리</h2>
+        </div>
 
-            <thead>
-              <tr>
-                <th>카테고리</th>
-                <th>세부 카테고리</th>
-                <th>상태</th>
-                <th>상품명</th>
-                <th>기간</th>
-                <th></th>
-              </tr>
-            </thead>
+        {/* 카테고리 탭 · 검색 · 재고 품목 테이블 */}
+        <section className="products-section">
+          <div className="surface-box">
+            {/* 카테고리 탭 및 품목 검색 */}
+            <div className="products-controls">
+              <div className="products-tabs">
+                <button type="button" className="products-tab products-tab-active">
+                  전체 (5)
+                </button>
+                <button type="button" className="products-tab">
+                  식료품 (3)
+                </button>
+                <button type="button" className="products-tab">
+                  생필품 (2)
+                </button>
+              </div>
 
-            <tbody>
-              {products
-                .slice()
-                .sort((a, b) =>
-                  new Date(a.product_date) - new Date(b.product_date)
-                )
-                .map((product) => (
-                  <tr key={product.product_id}>
-                    <td>{product.category}</td>
+              <div className="products-search-box">
+                <FontAwesomeIcon className="products-search-icon" icon={faMagnifyingGlass} />
+                <input
+                  type="search"
+                  className="products-search"
+                  placeholder="품목 검색"
+                  aria-label="품목 검색"
+                  readOnly
+                />
+              </div>
+            </div>
 
-                    <td>{product.subcategory}</td>
-
-                    <td>
-                      <span
-                        className={`products-status status-${product.status}`}
-                      >
-                        {product.status}
-                      </span>
-                    </td>
-
-                    <td className="products-name">
-                      {product.product_name}
-                    </td>
-
-                    <td className="products-date">
-                      <span>
-                        {product.product_date.replaceAll('-', '.')}
-                      </span>
-                      <span>{product.dday}</span>
-                    </td>
-
-                    <td>
-                      <button
-                        type="button"
-                        className="products-delete"
-                        disabled
-                      >
-                        삭제
-                      </button>
-                    </td>
+            {/* 재고 품목 목록 테이블 */}
+            <div className="products-list">
+              <table className="products-table">
+                <thead>
+                  <tr>
+                    <th>카테고리</th>
+                    <th>세부 카테고리</th>
+                    <th>상태</th>
+                    <th>상품명</th>
+                    <th>기간</th>
+                    <th></th>
                   </tr>
-                ))}
-            </tbody>
+                </thead>
 
-          </table>
+                <tbody>
+                  {products
+                    .slice()
+                    .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
+                    .map((product) => (
+                      <tr key={product.product_id}>
+                        <td>{product.category}</td>
+                        <td>{product.subcategory}</td>
+                        <td>
+                          <span className={`products-status status-${product.status}`}>
+                            {product.status}
+                          </span>
+                        </td>
+                        <td className="products-name">{product.product_name}</td>
+                        <td className="products-date">
+                          <span>{product.product_date.replaceAll('-', '.')}</span>
+                          <span>{product.dday}</span>
+                        </td>
+                        <td>
+                          <button type="button" className="products-delete" disabled>
+                            삭제
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
-
       </main>
 
-      {/* 화면 위에 떠 있는 영수증 인식 버튼 */}
+      {/* 하단 중앙 영수증 인식 플로팅 버튼 */}
       <div className="products-upload">
-
         {uploadOpen && (
           <div className="products-upload-menu">
             <button
@@ -223,7 +211,7 @@ export default function ProductsPage() {
               }}
             >
               <span className="products-upload-folder">
-                <FolderOpen size={30} strokeWidth={2.2} />
+                <FontAwesomeIcon icon={faFolderOpen} />
               </span>
 
               <span className="products-upload-text">
@@ -241,18 +229,13 @@ export default function ProductsPage() {
           onClick={() => setUploadOpen(!uploadOpen)}
         >
           <span>영수증 인식</span>
-          {uploadOpen
-            ? <ChevronUp size={20} />
-            : <ChevronDown size={20} />
-          }
+          <FontAwesomeIcon icon={uploadOpen ? faChevronUp : faChevronDown} />
         </button>
-
       </div>
 
+      {/* 영수증 OCR 결과 모달 */}
       {ocrModalOpen && (
-        <ReceiptOCRModal
-          onClose={() => setOcrModalOpen(false)}
-        />
+        <ReceiptOCRModal onClose={() => setOcrModalOpen(false)} />
       )}
     </Layout>
   );

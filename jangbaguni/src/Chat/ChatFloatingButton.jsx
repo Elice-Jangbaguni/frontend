@@ -5,6 +5,7 @@ import './ChatFloatingButton.css';
 
 export default function ChatFloatingButton({ onClick, unreadCount = 0 }) {
   return (
+    // 우측 하단 채팅 플로팅 버튼
     <button
       type="button"
       className="chat-floating-btn"
@@ -12,6 +13,7 @@ export default function ChatFloatingButton({ onClick, unreadCount = 0 }) {
       aria-label="공구 채팅 열기"
     >
       <FontAwesomeIcon icon={faCommentDots} className="chat-floating-icon" />
+      {/* 읽지 않은 메시지 배지 */}
       {unreadCount > 0 && (
         <span className="chat-floating-badge">
           {unreadCount > 99 ? '99+' : unreadCount}

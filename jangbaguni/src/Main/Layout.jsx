@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBasketShopping } from '@fortawesome/free-solid-svg-icons';
 import './MainPage.css';
 
 export default function Layout({ children, showFooter = true }) {
@@ -11,7 +13,6 @@ export default function Layout({ children, showFooter = true }) {
   const isSignupPage = location.pathname === '/terms' || location.pathname === '/signup';
   const isProductsPage = location.pathname === '/products';
   const isGroupBuyPage = location.pathname === '/groupbuy';
-
 
   // localStorage 기반 Mock 로그인 상태
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
@@ -54,44 +55,55 @@ export default function Layout({ children, showFooter = true }) {
   return (
     <div className="main-wrapper">
       
-      {/* 1. 헤더 그대로 넣기 */}
+      {/* 헤더 */}
       <header className="main-header">
-        <div className="header-left">
-          <div className="logo-box" onClick={handleGoToMain}>
-            <div className="logo-icon">🛒</div>
-            <span className="logo-text">장바구니</span>
+        <div className="header-inner">
+          <div className="header-left">
+            {/* 로고 */}
+            <div className="logo-box" onClick={handleGoToMain}>
+              <FontAwesomeIcon icon={faBasketShopping} className="logo-icon" />
+              <span className="logo-text">장바구니</span>
+            </div>
           </div>
-          <nav className="main-nav"></nav>
-        </div>
 
-        {isLoggedIn && (
-          <div className="header-center">
-            <div className={`product ${isProductsPage ? 'active' : ''}`} onClick={handleGoToProducts}>재고 관리</div>
-            <div className={`groupbuy ${isGroupBuyPage ? 'active' : ''}`} onClick={handleGoToGroupBuy}>공동 구매</div>
+          {/* 로그인 시 표시 */}
+          <nav className="header-center">
+            {isLoggedIn && (
+              <>
+                <div className={`product ${isProductsPage ? 'active' : ''}`} onClick={handleGoToProducts}>
+                  재고 관리
+                </div>
+                <div className={`groupbuy ${isGroupBuyPage ? 'active' : ''}`} onClick={handleGoToGroupBuy}>
+                  공동 구매
+                </div>
+              </>
+            )}
+          </nav>
+
+          <div className="header-right">
+            {/* 로그인 O - userName, 로그아웃 */}
+            {isLoggedIn ? (
+              <>
+                <div className="user-name">{userName}님</div>
+                <div className="logout" onClick={handleLogout}>로그아웃</div>
+              </>
+            ) : (
+              <>
+              {/* 로그인 X - 로그인, 회원가입 */}
+                <div className={`auth-text ${isLoginPage ? 'active' : ''}`} onClick={handleGoToLogin}>로그인</div>
+                <div className={`auth-text ${isSignupPage ? 'active' : ''}`} onClick={handleGoToTerms}>회원 가입</div>
+              </>
+            )}
           </div>
-        )}
-
-        <div className="header-right">
-          {isLoggedIn ? (
-            <>
-              <div className="user-name">{userName}님</div>
-              <div className="logout" onClick={handleLogout}>로그아웃</div>            
-            </>
-          ) : (
-            <>
-              <div className={`auth-text ${isLoginPage ? 'active' : ''}`} onClick={handleGoToLogin}>로그인</div>
-              <div className={`auth-text ${isSignupPage ? 'active' : ''}`} onClick={handleGoToTerms}>회원 가입</div>
-            </>
-          )}
         </div>
       </header>
 
-      {/* 2. 각 페이지 내용이 들어가는 자리 */}
+      {/* 각 페이지 내용 */}
       <main className="main-content">
         {children}
       </main>
 
-      {/* 3. 푸터 그대로 넣기 */}
+      {/* 푸터 */}
       {showFooter && (
         <footer className="main-footer">
           <div className="footer-content">
