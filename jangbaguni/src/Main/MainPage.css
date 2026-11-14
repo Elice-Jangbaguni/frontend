@@ -466,6 +466,7 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-height: 46px;
   margin-bottom: 20px;
 }
 
@@ -479,6 +480,7 @@ html {
   text-align: left;
   font-size: 30px;
   font-weight: 800;
+  line-height: 1.2;
   color: #121212;
   margin: 0;
   letter-spacing: -0.02em;
