@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import './SignUpPage.css';
-import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
+import './SignUpPage.css';
 
 export default function SignupPage() {
+  // 회원가입 입력 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
     userId: '',
     password: '',
@@ -110,9 +111,11 @@ export default function SignupPage() {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
+    // 푸터 숨김 레이아웃
     <Layout showFooter={false}>
-      <div className="signup-header-area">
-        <h2 className="signup-title">정보 입력</h2>
+      {/* 상단 페이지 타이틀 및 진행 단계 */}
+      <div className="auth-header-area">
+        <h2 className="auth-title">정보 입력</h2>
         <div className="step-indicator">
           <span className="signup">Step 1/2 약관동의</span>
           <FontAwesomeIcon icon={faCaretRight} className="step-arrow" />
@@ -120,24 +123,28 @@ export default function SignupPage() {
         </div>
       </div>
 
-      <section className="signup-section">
-        <form className="signup-form">
-          {/* 아이디 */}
+      {/* 회원가입 입력 폼 섹션 */}
+      <section className="auth-section">
+        <form className="auth-form">
+          {/* 아이디 입력 필드 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="userId" className="form-label">아이디</label>
               {userIdStatus.isChecked && (
+                // 유효성 안내 메시지 출력
                 <span className={`status-message ${userIdStatus.isSuccess ? 'success' : 'error'}`}>
                   {userIdStatus.message}
                 </span>
               )}
             </div>
+
+            {/* 중복 확인 버튼 */}
             <div className="input-with-button">
               <input
                 type="text"
                 id="userId"
                 name="userId"
-                className="form-input"
+                className="auth-input"
                 value={formData.userId}
                 onChange={handleChange}
                 placeholder="영문, 숫자 포함 4~12자"
@@ -152,11 +159,12 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* 비밀번호 */}
+          {/* 비밀번호 입력 필드 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="password" className="form-label">비밀번호</label>
               {passwordStatus.message && (
+                // 유효성 안내 메시지 출력
                 <span className="status-message error">
                   {passwordStatus.message}
                 </span>
@@ -166,18 +174,19 @@ export default function SignupPage() {
               type="password"
               id="password"
               name="password"
-              className="form-input"
+              className="auth-input"
               value={formData.password}
               onChange={handleChange}
               placeholder="문자, 숫자, 특수문자(!,@,#,$) 포함 8~20자"
             />
           </div>
 
-          {/* 비밀번호 확인 */}
+          {/* 비밀번호 확인 입력 필드*/}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="passwordConfirm" className="form-label">비밀번호 확인</label>
               {passwordConfirmStatus.message && (
+                // 유효성 안내 메시지 출력
                 <span className={`status-message ${passwordConfirmStatus.isSuccess ? 'success' : 'error'}`}>
                   {passwordConfirmStatus.message}
                 </span>
@@ -187,14 +196,14 @@ export default function SignupPage() {
               type="password"
               id="passwordConfirm"
               name="passwordConfirm"
-              className="form-input"
+              className="auth-input"
               value={formData.passwordConfirm}
               onChange={handleChange}
               placeholder="비밀번호 확인"
             />
           </div>
 
-          {/* 생년월일 */}
+          {/* 생년월일 드롭다운 선택 필드 */}
           <div className="form-group">
             <label className="form-label">생년월일</label>
             <div className="birth-select-group">
@@ -245,7 +254,7 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* 성별 */}
+          {/* 성별 라디오 버튼 선택 필드 */}
           <div className="form-group gender-group">
             <label className="form-label">성별</label>
             <div className="radio-group">
@@ -273,7 +282,7 @@ export default function SignupPage() {
           </div>
 
           {/* 가입완료 버튼 */}
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="auth-primary-btn signup-submit-btn">
             가입완료
           </button>
         </form>
