@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import './CreateGroupBuyModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import './CreateGroupBuyModal.css';
 
 export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
+  // 공구 작성 입력 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
     neighborhood: '서울특별시 성북구',
     title: '',
@@ -13,8 +14,22 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
     description: ''
   });
 
+  // 숫자 추출 후 천 단위 콤마 및 '원' 부착 헬퍼
+  const handlePriceChange = (e) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+    const formattedValue = numericValue
+      ? `${Number(numericValue).toLocaleString('ko-KR')}원`
+      : '';
+
+    setFormData((prev) => ({
+      ...prev,
+      price: formattedValue
+    }));
+  };
+
   if (!isOpen) return null;
 
+  // 일반 텍스트 입력 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -23,28 +38,16 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
     }));
   };
 
-  // 1인당 부담금: 숫자만 추출 -> 천 단위 콤마 + '원' 자동 부착
-  const handlePriceChange = (e) => {
-    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-    const formattedValue = numericValue
-      ? `${Number(numericValue).toLocaleString("ko-KR")}원`
-      : "";
-
-    setFormData((prev) => ({
-      ...prev,
-      price: formattedValue
-    }));
-  };
-
-  // 모집 인원: 숫자만 입력되도록 처리
+  // 모집 인원 숫자만 입력 처리
   const handleCapacityChange = (e) => {
-    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setFormData((prev) => ({
       ...prev,
       capacity: numericValue
     }));
   };
 
+  // 공구 작성 제출 핸들러
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title.trim()) {
@@ -76,6 +79,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
             <div className="label-wrapper">
               <label className="form-label">동네</label>
             </div>
+            {/* 동네 표시 배지 */}
             <div className="neighborhood-badge">
               {formData.neighborhood}
             </div>
@@ -111,15 +115,14 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
               value={formData.price}
               onChange={handlePriceChange}
               placeholder="1인당 부담금을 입력해주세요."
-
               onKeyDown={(e) => {
                 if (e.key === 'Backspace' && formData.price.endsWith('원')) {
                   e.preventDefault();
-                  const withoutWon = formData.price.slice(0, -1).replace(/[^0-9]/g, "");
+                  const withoutWon = formData.price.slice(0, -1).replace(/[^0-9]/g, '');
                   const nextDigits = withoutWon.slice(0, -1);
                   setFormData((prev) => ({
                     ...prev,
-                    price: nextDigits ? `${Number(nextDigits).toLocaleString("ko-KR")}원` : ""
+                    price: nextDigits ? `${Number(nextDigits).toLocaleString('ko-KR')}원` : ''
                   }));
                 }
               }}
