@@ -3,24 +3,28 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import './CreateGroupBuyModal.css';
 
-export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubmit }) {
-  // 공구 수정 입력 폼 데이터 상태 관리
+export default function EditGroupBuyModal({
+  isOpen,
+  onClose,
+  initialData,
+  onSubmit,
+  isSubmitting = false,
+}) {
   const [formData, setFormData] = useState({
-    neighborhood: '서울특별시 성북구',
+    region: '서울특별시 성북구',
     title: '',
     price: '',
     location: '',
     capacity: '',
-    description: ''
+    description: '',
   });
 
-  // 숫자 추출 후 천 단위 콤마 및 '원' 부착 헬퍼
   const formatPrice = (value) => {
     const numericValue = String(value ?? '').replace(/[^0-9]/g, '');
     return numericValue ? `${Number(numericValue).toLocaleString('ko-KR')}원` : '';
   };
 
-  // 모달 열릴 때 기존 상세 게시글 데이터 반영
+  // 수정 버튼 클릭 시 기존 폼 내용 채우기
   useEffect(() => {
     if (isOpen && initialData) {
       const parsedCapacity = initialData.badge
@@ -28,62 +32,82 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
         : '';
 
       setFormData({
-        neighborhood: initialData.neighborhood || '서울특별시 성북구',
+        region: initialData.region || '서울특별시 성북구',
         title: initialData.title || '',
         price: formatPrice(initialData.price),
         location: initialData.location || '',
-        capacity: initialData.capacity || parsedCapacity,
-        description: initialData.description || ''
+        capacity: String(initialData.capacity || parsedCapacity || ''),
+        description: initialData.description || '',
       });
     }
   }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
-  // 일반 텍스트 입력 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  // 1인당 부담금 포맷 적용
   const handlePriceChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      price: formatPrice(e.target.value)
+      price: formatPrice(e.target.value),
     }));
   };
 
-  // 모집 인원 숫자만 입력 처리
   const handleCapacityChange = (e) => {
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setFormData((prev) => ({
       ...prev,
-      capacity: numericValue
+      capacity: numericValue,
     }));
   };
 
-  // 공구 수정 제출 핸들러
-  const handleSubmit = (e) => {
+  // 수정 완료 버튼 클릭 시에만 API 호출용 payload 전달
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const numericPrice = Number(String(formData.price).replace(/[^0-9]/g, ''));
+    const numericCapacity = Number(String(formData.capacity).replace(/[^0-9]/g, ''));
+
     if (!formData.title.trim()) {
       alert('제품명을 입력해주세요.');
       return;
     }
-    if (onSubmit) {
-      onSubmit(formData);
+    if (!numericPrice) {
+      alert('1인당 부담금을 입력해주세요.');
+      return;
     }
-    alert('공구 정보가 수정되었습니다!');
-    onClose();
+    if (!formData.location.trim()) {
+      alert('픽업 장소를 입력해주세요.');
+      return;
+    }
+    if (numericCapacity < 2) {
+      alert('모집 인원은 최소 2명 이상이어야 합니다.');
+      return;
+    }
+
+    const payload = {
+      region: formData.region,
+      product_name: formData.title.trim(),
+      price: numericPrice,
+      place: formData.location.trim(),
+      number_of_people: numericCapacity,
+      description: formData.description.trim(),
+    };
+
+    if (onSubmit) {
+      await onSubmit(payload);
+    }
   };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        {/* 상단 헤더 */}
         <div className="modal-header">
           <h3>공구 수정</h3>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="닫기">
@@ -91,7 +115,6 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
           </button>
         </div>
 
-        {/* 스크롤 가능한 폼 본문 */}
         <form id="edit-groupbuy-form" className="modal-body" onSubmit={handleSubmit}>
           {/* 동네 */}
           <div className="form-group">
@@ -99,7 +122,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
               <label className="form-label">동네</label>
             </div>
             <div className="neighborhood-badge">
-              {formData.neighborhood}
+              {formData.region}
             </div>
           </div>
 
@@ -142,7 +165,7 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
                   const nextDigits = withoutWon.slice(0, -1);
                   setFormData((prev) => ({
                     ...prev,
-                    price: nextDigits ? `${Number(nextDigits).toLocaleString('ko-KR')}원` : ''
+                    price: nextDigits ? `${Number(nextDigits).toLocaleString('ko-KR')}원` : '',
                   }));
                 }
               }}
@@ -198,10 +221,14 @@ export default function EditGroupBuyModal({ isOpen, onClose, initialData, onSubm
           </div>
         </form>
 
-        {/* 하단 푸터 */}
         <div className="modal-footer">
-          <button type="submit" form="edit-groupbuy-form" className="modal-confirm-btn">
-            수정 완료
+          <button
+            type="submit"
+            form="edit-groupbuy-form"
+            className="modal-confirm-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '수정 중...' : '수정 완료'}
           </button>
         </div>
       </div>

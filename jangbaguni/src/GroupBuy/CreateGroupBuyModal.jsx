@@ -3,14 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import './CreateGroupBuyModal.css';
 
-export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
+export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmitting = false }) {
   // 공구 작성 입력 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
-    neighborhood: '서울특별시 성북구',
-    title: '',
+    region: '서울특별시 성북구',
+    product_name: '',
     price: '',
-    location: '',
-    capacity: '',
+    place: '',
+    number_of_people: '',
     description: ''
   });
 
@@ -43,22 +43,46 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setFormData((prev) => ({
       ...prev,
-      capacity: numericValue
+      number_of_people: numericValue
     }));
   };
 
   // 공구 작성 제출 핸들러
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim()) {
+
+    const numericPrice = Number(formData.price.replace(/[^0-9]/g, ''));
+    const numericCapacity = Number(formData.number_of_people.replace(/[^0-9]/g, ''));
+
+    if (!formData.product_name.trim()) {
       alert('제품명을 입력해주세요.');
       return;
     }
-    if (onSubmit) {
-      onSubmit(formData);
+    if (!numericPrice) {
+      alert('1인당 부담금을 입력해주세요.');
+      return;
     }
-    alert('공구가 작성되었습니다!');
-    onClose();
+    if (!formData.place.trim()) {
+      alert('픽업 장소를 입력해주세요.');
+      return;
+    }
+    if (numericCapacity < 2) {
+      alert('모집 인원은 최소 2명 이상이어야 합니다.');
+      return;
+    }
+
+    const payload = {
+      region: formData.region,
+      product_name: formData.product_name.trim(),
+      price: numericPrice,
+      place: formData.place.trim(),
+      number_of_people: numericCapacity,
+      description: formData.description.trim(),
+    };
+
+    if (onSubmit) {
+      await onSubmit(payload);
+    }
   };
 
   return (
@@ -81,21 +105,21 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
             </div>
             {/* 동네 표시 배지 */}
             <div className="neighborhood-badge">
-              {formData.neighborhood}
+              {formData.region}
             </div>
           </div>
 
           {/* 제품명 */}
           <div className="form-group">
             <div className="label-wrapper">
-              <label htmlFor="title" className="form-label">제품명</label>
+              <label htmlFor="product_name" className="form-label">제품명</label>
             </div>
             <input
               type="text"
-              id="title"
-              name="title"
+              id="product_name"
+              name="product_name"
               className="write-input"
-              value={formData.title}
+              value={formData.product_name}
               onChange={handleChange}
               placeholder="제품명을 입력해주세요."
             />
@@ -132,17 +156,17 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
           {/* 픽업 장소 */}
           <div className="form-group">
             <div className="label-wrapper">
-              <label htmlFor="location" className="form-label">픽업 장소</label>
+              <label htmlFor="place" className="form-label">픽업 장소</label>
               <span className="status-message success">
                 상의 후 변경 가능합니다.
               </span>
             </div>
             <input
               type="text"
-              id="location"
-              name="location"
+              id="place"
+              name="place"
               className="write-input"
-              value={formData.location}
+              value={formData.place}
               onChange={handleChange}
               placeholder="픽업 장소를 입력해주세요."
             />
@@ -151,15 +175,15 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
           {/* 모집 인원 (명) */}
           <div className="form-group">
             <div className="label-wrapper">
-              <label htmlFor="capacity" className="form-label">모집 인원 (명)</label>
+              <label htmlFor="number_of_people" className="form-label">모집 인원 (명)</label>
             </div>
             <input
               type="text"
               inputMode="numeric"
-              id="capacity"
-              name="capacity"
+              id="number_of_people"
+              name="number_of_people"
               className="write-input"
-              value={formData.capacity}
+              value={formData.number_of_people}
               onChange={handleCapacityChange}
               placeholder="모집 인원을 입력해주세요."
             />
@@ -183,8 +207,13 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
 
         {/* 하단 푸터 */}
         <div className="modal-footer">
-          <button type="submit" form="create-groupbuy-form" className="modal-confirm-btn">
-            작성 완료
+          <button
+            type="submit"
+            form="create-groupbuy-form"
+            className="modal-confirm-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '작성 중...' : '작성 완료'}
           </button>
         </div>
       </div>

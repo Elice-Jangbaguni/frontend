@@ -168,6 +168,25 @@
   gap: 4px;
 }
 
+/* 공구 목록 로딩 및 빈 상태 안내 */
+.loading-text,
+.empty-text {
+  margin: 0;
+  padding: 36px 16px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #595959;
+}
+
+@media (max-width: 768px) {
+  .loading-text,
+  .empty-text {
+    padding: 24px 12px;
+    font-size: 13px;
+  }
+}
+
 /* 반응형 미디어 쿼리 */
 @media (max-width: 960px) {
   .card-grid {

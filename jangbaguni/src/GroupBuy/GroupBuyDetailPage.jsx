@@ -1,82 +1,300 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import Layout from '../Main/Layout';
 import EditGroupBuyModal from './EditGroupBuyModal';
 import ChatFloatingButton from '../Chat/ChatFloatingButton';
 import ChatModal from '../Chat/ChatModal';
+import { getGroupBuyDetail, updateGroupBuy, joinGroupBuy } from '../API/groupbuy';
 import './GroupBuyDetailPage.css';
 
+const BACKEND_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://jangbaguni-backend.onrender.com';
+const FALLBACK_IMAGE =
+  'https://thumbnail.coupangcdn.com/thumbnails/remote/657x657q90trim/image/retail/images/92420907427591-1d313b60-ec44-4332-a2e6-7a246473bb4c.jpg';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return FALLBACK_IMAGE;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${BACKEND_BASE_URL}${imagePath}`;
+};
+
+const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
+  const current = Number(currentPeople ?? 1);
+  const total = Number(numberOfPeople ?? 2);
+
+  if (total > 0 && current >= total) {
+    return '모집완료';
+  }
+  if (status === 'recruiting') {
+    return '모집중';
+  }
+  return '모집중';
+};
+
+const mapDetailResponse = (data) => {
+  const statusRaw = data?.group_buy_status ?? data?.status;
+  const currentPeople = data?.current_people ?? 1;
+  const numberOfPeople = data?.number_of_people ?? 2;
+  const statusText = getStatusLabel(statusRaw, currentPeople, numberOfPeople);
+
+  const rawPrice = data?.price_per_person ?? data?.price;
+  const formattedPrice =
+    typeof rawPrice === 'number'
+      ? rawPrice.toLocaleString('ko-KR')
+      : String(rawPrice ?? '');
+
+  return {
+    id: data?.group_buy_id ?? data?.buy_id ?? data?.id ?? null,
+    region: data?.region || '서울특별시 성북구',
+    currentPeople,
+    numberOfPeople,
+    badge: `${statusText} (${currentPeople}/${numberOfPeople}명)`,
+    title: data?.product_name || '',
+    price: formattedPrice,
+    location: data?.pickup_place ?? data?.place ?? '',
+    imageUrl: getImageUrl(data?.product_image_path),
+    description: data?.description || '',
+  };
+};
+
 export default function GroupBuyDetailPage() {
-  // 모달 열림 및 상세 게시글 상태 관리
+  const { buyId: paramBuyId } = useParams();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+
+  const rawInitialBuyId =
+    paramBuyId ??
+    searchParams.get('buyId') ??
+    location.state?.buyId ??
+    location.state?.groupBuy?.group_buy_id ??
+    location.state?.groupBuy?.buy_id ??
+    location.state?.groupBuy?.id;
+
+  const initialBuyId =
+    rawInitialBuyId !== undefined &&
+    rawInitialBuyId !== null &&
+    rawInitialBuyId !== '' &&
+    !Number.isNaN(Number(rawInitialBuyId))
+      ? Number(rawInitialBuyId)
+      : null;
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedChatRoom, setSelectedChatRoom] = useState(null);
+  const [isLoading, setIsLoading] = useState(Boolean(initialBuyId));
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // 공구 글 더미데이터
-  const [detailData, setDetailData] = useState({
-    id: 99,
-    neighborhood: '서울특별시 성북구',
-    badge: '모집중 (1/2명)',
-    title: '토레타 이온음료 340ml',
-    price: '12,180',
-    location: '성신여대 정문 앞',
-    sellerName: '공구주 이름',
-    imageUrl: 'https://thumbnail.coupangcdn.com/thumbnails/remote/657x657q90trim/image/retail/images/92420907427591-1d313b60-ec44-4332-a2e6-7a246473bb4c.jpg',
-    description: `48개 6명이서 8개씩 공구하실 분!
-편하게 연락 주세요!
+  const [detailData, setDetailData] = useState(() =>
+    location.state?.groupBuy
+      ? mapDetailResponse(location.state.groupBuy)
+      : {
+          id: initialBuyId,
+          region: '서울특별시 성북구',
+          currentPeople: 1,
+          numberOfPeople: 2,
+          badge: '모집중 (1/2명)',
+          title: '',
+          price: '',
+          location: '',
+          imageUrl: FALLBACK_IMAGE,
+          description: '',
+        }
+  );
 
-픽업 장소, 시간은 다 모이면 다시 얘기하겠습니다!
-여성분만 받을게요 !
+  useEffect(() => {
+    if (!initialBuyId) return;
 
-성신여대 재학생 분들이면 더 좋을 것 같습니다 !! ^^
-일단 편하게 연락 주세요`
-  });
+    let isMounted = true;
+    const fetchDetail = async () => {
+      setIsLoading(true);
+      setErrorMessage('');
+      try {
+        const data = await getGroupBuyDetail(initialBuyId);
+        if (isMounted && data && typeof data === 'object') {
+          setDetailData((prev) => ({
+            ...prev,
+            ...mapDetailResponse(data),
+            id: data?.group_buy_id ?? data?.buy_id ?? data?.id ?? initialBuyId,
+          }));
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error(
+            '공구 상세 조회 실패:',
+            error.response?.status,
+            error.response?.data || error.message
+          );
+          setErrorMessage(
+            error.response?.data?.detail || '공구 상세 정보를 불러오지 못했습니다.'
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  // 수정 모달 열기 및 수정 내용 반영
+    fetchDetail();
+    return () => {
+      isMounted = false;
+    };
+  }, [initialBuyId]);
+
   const handleEdit = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateSubmit = (updatedForm) => {
-    setDetailData((prev) => ({
-      ...prev,
-      title: updatedForm.title,
-      price: updatedForm.price,
-      location: updatedForm.location,
-      badge: updatedForm.capacity ? `모집중 (1/${updatedForm.capacity}명)` : prev.badge,
-      description: updatedForm.description
-    }));
+  const handleUpdateSubmit = async (payload) => {
+    const targetId = detailData.id ?? initialBuyId;
+    if (!targetId) {
+      alert('공구 ID를 찾을 수 없습니다.');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const updated = await updateGroupBuy(targetId, payload);
+      console.log('공구 수정 성공:', updated);
+
+      if (updated && typeof updated === 'object' && (updated.group_buy_id || updated.buy_id || updated.id)) {
+        setDetailData(mapDetailResponse(updated));
+      } else {
+        setDetailData((prev) => {
+          const nextCurrent = prev.currentPeople ?? 1;
+          const nextTotal = payload.number_of_people;
+          const nextStatus = getStatusLabel(
+            updated?.group_buy_status ?? updated?.status,
+            nextCurrent,
+            nextTotal
+          );
+
+          return {
+            ...prev,
+            region: payload.region,
+            title: payload.product_name,
+            price: payload.price.toLocaleString('ko-KR'),
+            location: payload.place,
+            currentPeople: nextCurrent,
+            numberOfPeople: nextTotal,
+            badge: `${nextStatus} (${nextCurrent}/${nextTotal}명)`,
+            description: payload.description,
+          };
+        });
+      }
+
+      alert('공구 정보가 수정되었습니다!');
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error(
+        '공구 수정 실패:',
+        error.response?.status,
+        error.response?.data || error.message
+      );
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail?.[0];
+        alert(
+          `입력 형식 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
+            detail?.msg || '입력값을 확인해 주세요.'
+          }`
+        );
+      } else {
+        alert(error.response?.data?.detail || '공구 수정 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  // 게시글 삭제 확인
   const handleDelete = () => {
     alert('정말 삭제하시겠습니까?');
   };
 
-  // 해당 상품 1:1 채팅방 진입
-  const handleChat = () => {
-    setSelectedChatRoom({
-      id: detailData.id,
-      productTitle: detailData.title,
-      partnerName: detailData.sellerName,
-      lastMessage: '',
-      updatedAt: '방금 전',
-      unreadCount: 0,
-      status: '모집중',
-    });
-    setIsChatOpen(true);
+  const handleChat = async () => {
+    const targetId = detailData.id ?? initialBuyId;
+    if (!targetId) {
+      alert('공구 ID를 찾을 수 없습니다.');
+      return;
+    }
+
+    setIsJoining(true);
+    try {
+      const joined = await joinGroupBuy(targetId);
+      console.log('공구 참여 성공:', joined);
+
+      setDetailData((prev) => {
+        const nextCurrent =
+          joined?.current_people ??
+          (prev.currentPeople < prev.numberOfPeople
+            ? prev.currentPeople + 1
+            : prev.currentPeople);
+        const total = joined?.number_of_people ?? prev.numberOfPeople ?? 2;
+        const statusText = getStatusLabel(
+          joined?.group_buy_status ?? joined?.status,
+          nextCurrent,
+          total
+        );
+
+        return {
+          ...prev,
+          currentPeople: nextCurrent,
+          numberOfPeople: total,
+          badge: `${statusText} (${nextCurrent}/${total}명)`,
+        };
+      });
+
+      setSelectedChatRoom({
+        id: targetId,
+        productTitle: detailData.title,
+        lastMessage: '',
+        updatedAt: '방금 전',
+        unreadCount: 0,
+        status: '모집중',
+      });
+      setIsChatOpen(true);
+    } catch (error) {
+      console.error(
+        '공구 참여 실패:',
+        error.response?.status,
+        error.response?.data || error.message
+      );
+      alert(error.response?.data?.detail || '공구 참여 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsJoining(false);
+    }
   };
 
-  // 전체 채팅방 목록 열기
   const handleOpenChatList = () => {
     setSelectedChatRoom(null);
     setIsChatOpen(true);
   };
 
+  if (isLoading && !detailData.title) {
+    return (
+      <Layout>
+        <div className="detail-area">
+          <p className="loading-text">공구 상세 정보를 불러오는 중...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (errorMessage && !detailData.title) {
+    return (
+      <Layout>
+        <div className="detail-area">
+          <p className="empty-text">{errorMessage}</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="detail-area">
         <div className="detail-section">
-          {/* 좌측 - 상품 이미지 및 공구주 정보 */}
           <div className="detail-left">
             <div className="detail-image-wrapper">
               <img
@@ -86,19 +304,16 @@ export default function GroupBuyDetailPage() {
               />
             </div>
             <div className="seller-badge">
-              {detailData.sellerName}
+              {detailData.user_id}
             </div>
+
           </div>
 
-          {/* 우측 - 상품 상세 정보 및 액션 버튼 */}
           <div className="detail-right">
-            <div className="status-badge-detail">
-              {detailData.badge}
-            </div>
+            <div className="status-badge-detail">{detailData.badge}</div>
 
             <h1 className="detail-title">{detailData.title}</h1>
 
-            {/* 1인당 부담금 및 픽업 장소 */}
             <div className="price-location-row">
               <div className="price-area">
                 <span className="price-label">1인당 부담금</span>
@@ -113,7 +328,6 @@ export default function GroupBuyDetailPage() {
 
             <hr className="detail-divider" />
 
-            {/* 공구 상세 설명 */}
             <div className="detail-description">
               {detailData.description.split('\n').map((line, idx) => (
                 <React.Fragment key={idx}>
@@ -123,31 +337,35 @@ export default function GroupBuyDetailPage() {
               ))}
             </div>
 
-            {/* 수정 / 삭제 / 채팅 버튼 */}
             <div className="action-button-group">
-              <button className="edit-btn" onClick={handleEdit}>
+              <button type="button" className="edit-btn" onClick={handleEdit}>
                 수정
               </button>
-              <button className="delete-btn" onClick={handleDelete}>
+              <button type="button" className="delete-btn" onClick={handleDelete}>
                 삭제
               </button>
             </div>
-            <button className="chat-btn" onClick={handleChat}>
-              채팅
+
+            <button
+              type="button"
+              className="chat-btn"
+              onClick={handleChat}
+              disabled={isJoining}
+            >
+              {isJoining ? '참여 중...' : '채팅'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* 공구 수정 모달 */}
       <EditGroupBuyModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         initialData={detailData}
         onSubmit={handleUpdateSubmit}
+        isSubmitting={isUpdating}
       />
 
-      {/* 우측 하단 채팅 플로팅 버튼 및 모달 */}
       <ChatFloatingButton onClick={handleOpenChatList} />
       <ChatModal
         isOpen={isChatOpen}
