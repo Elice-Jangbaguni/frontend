@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import apiClient from './API/client';
 import MainPage from './Main/MainPage.jsx';
 import LoginPage from './Auth/LogInPage.jsx';
 import SignupPage from './Auth/SignUpPage.jsx';
@@ -10,6 +11,12 @@ import GroupBuyDetailPage from './GroupBuy/GroupBuyDetailPage.jsx';
 
 
 export default function App() {
+
+  useEffect(() => {
+    // 앱이 처음 열릴 때 백엔드 서버를 미리 깨워둠 (응답 결과는 무시)
+    apiClient.get('/docs').catch(() => {});
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

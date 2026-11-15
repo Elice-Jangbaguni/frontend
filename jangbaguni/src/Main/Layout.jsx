@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping } from '@fortawesome/free-solid-svg-icons';
+import { logoutUser } from '../API/auth';
 import './MainPage.css';
 
 export default function Layout({ children, showFooter = true }) {
 
+  const navigate = useNavigate();
   const location = useLocation();
 
   // 현재 경로 판별
@@ -14,11 +16,9 @@ export default function Layout({ children, showFooter = true }) {
   const isProductsPage = location.pathname === '/products';
   const isGroupBuyPage = location.pathname === '/groupbuy';
 
-  // localStorage 기반 Mock 로그인 상태
+  // localStorage 기반 로그인 상태
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const userName = localStorage.getItem('userName') || '회원';
-
-  const navigate = useNavigate();
 
   // 메인 이동
   const handleGoToMain = () => {
@@ -45,11 +45,19 @@ export default function Layout({ children, showFooter = true }) {
     navigate('/groupbuy');
   };
 
-    // 로그아웃 버튼 클릭 이벤트
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userName');
-    navigate('/');
+  // 로그아웃 버튼 클릭 이벤트
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error('로그아웃 API 요청 오류:', error.response?.data);
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userName');
+      alert('로그아웃되었습니다.');
+      navigate('/');
+    }
   };
 
   return (
