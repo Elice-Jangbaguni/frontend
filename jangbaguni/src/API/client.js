@@ -1,4 +1,4 @@
-// src/api/client.js
+// src/API/client.js
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -17,4 +17,4 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-export default apiClient
+export default apiClient;
