@@ -6,7 +6,11 @@ import Layout from '../Main/Layout';
 import CreateGroupBuyModal from './CreateGroupBuyModal';
 import ChatFloatingButton from '../Chat/ChatFloatingButton';
 import ChatModal from '../Chat/ChatModal';
-import { getRegionGroupBuyList, createGroupBuy } from '../API/groupbuy';
+import {
+  getRegionGroupBuyList,
+  getMyGroupBuyList,
+  createGroupBuy,
+} from '../API/groupbuy';
 import './GroupBuyPage.css';
 
 const DEFAULT_REGION = '서울특별시 성북구';
@@ -34,30 +38,32 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
+const extractPosts = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.group_buy)) return data.group_buy;
+  if (Array.isArray(data?.posts)) return data.posts;
+  if (Array.isArray(data?.items)) return data.items;
+  return [];
+};
+
 export default function GroupBuyPage() {
   const navigate = useNavigate();
 
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [posts, setPosts] = useState([]);
+  const [myPosts, setMyPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMyLoading, setIsMyLoading] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchGroupBuyList = useCallback(async () => {
+  const fetchGroupBuyList = useCallback(async (targetRegion) => {
     setIsLoading(true);
     try {
-      const data = await getRegionGroupBuyList(region);
-      if (data?.region) {
-        setRegion(data.region);
-      }
-      const nextPosts = Array.isArray(data?.posts)
-        ? data.posts
-        : Array.isArray(data)
-        ? data
-        : [];
-      setPosts(nextPosts);
+      const data = await getRegionGroupBuyList(targetRegion);
+      setPosts(extractPosts(data));
     } catch (error) {
       console.error(
         '공구 목록 조회 실패:',
@@ -68,14 +74,35 @@ export default function GroupBuyPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [region]);
+  }, []);
+
+  const fetchMyGroupBuyList = useCallback(async () => {
+    setIsMyLoading(true);
+    try {
+      const data = await getMyGroupBuyList();
+      setMyPosts(extractPosts(data));
+    } catch (error) {
+      console.error(
+        '참여 중인 공구 조회 실패:',
+        error.response?.status,
+        error.response?.data || error.message
+      );
+      setMyPosts([]);
+    } finally {
+      setIsMyLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchGroupBuyList();
-  }, [fetchGroupBuyList]);
+    fetchGroupBuyList(region);
+  }, [fetchGroupBuyList, region]);
+
+  useEffect(() => {
+    fetchMyGroupBuyList();
+  }, [fetchMyGroupBuyList]);
 
   const handleToDetail = (item) => {
-    const buyId = item.group_buy_id ?? item.buy_id;
+    const buyId = item.group_buy_id ?? item.buy_id ?? item.id;
     navigate('/groupbuy/detail', {
       state: { buyId, groupBuy: item },
     });
@@ -88,9 +115,16 @@ export default function GroupBuyPage() {
       console.log('공구 생성 성공:', data);
       alert('공구가 작성되었습니다!');
       setIsCreateModalOpen(false);
-      await fetchGroupBuyList();
+      await Promise.all([
+        fetchGroupBuyList(payload.region || region),
+        fetchMyGroupBuyList(),
+      ]);
     } catch (error) {
-      console.error('공구 생성 실패:', error.response?.data);
+      console.error(
+        '공구 생성 실패:',
+        error.response?.status,
+        error.response?.data || error.message
+      );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
         alert(
@@ -107,7 +141,7 @@ export default function GroupBuyPage() {
   };
 
   const renderCard = (item, keyPrefix) => {
-    const buyId = item.group_buy_id ?? item.buy_id;
+    const buyId = item.group_buy_id ?? item.buy_id ?? item.id;
     const statusRaw = item.group_buy_status ?? item.status;
     const currentPeople = item.current_people ?? 1;
     const numberOfPeople = item.number_of_people ?? 2;
@@ -163,13 +197,13 @@ export default function GroupBuyPage() {
 
         <section className="groupbuy-section">
           <div className="surface-box">
-            {isLoading ? (
-              <p className="loading-text">공구 목록을 불러오는 중...</p>
-            ) : posts.length === 0 ? (
-              <p className="empty-text">아직 등록된 공구가 없습니다.</p>
+            {isMyLoading ? (
+              <p className="loading-text">참여 중인 공구를 불러오는 중...</p>
+            ) : myPosts.length === 0 ? (
+              <p className="empty-text">참여 중인 공구가 없습니다.</p>
             ) : (
               <div className="card-slider">
-                {posts.slice(0, 6).map((item) => renderCard(item, 'part'))}
+                {myPosts.map((item) => renderCard(item, 'part'))}
               </div>
             )}
           </div>

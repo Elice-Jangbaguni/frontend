@@ -1,16 +1,33 @@
 // src/API/groupbuy.js
 import apiClient from './client';
 
+const parseResponseData = (data) => {
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return data;
+    }
+  }
+  return data;
+};
+
 export const getRegionGroupBuyList = async (region) => {
   const response = await apiClient.get('/api/group_buy', {
     params: { region },
   });
-  return response.data;
+  return parseResponseData(response.data);
+};
+
+export const getMyGroupBuyList = async () => {
+  const response = await apiClient.get('/api/group_buy/participants');
+  return parseResponseData(response.data);
 };
 
 export const getGroupBuyDetail = async (buyId) => {
-  const response = await apiClient.get(`/api/group_buy/${buyId}`);
-  return response.data;
+  const id = normalizeBuyId(buyId);
+  const response = await apiClient.get(`/api/group_buy/${id}`);
+  return parseResponseData(response.data);
 };
 
 export const createGroupBuy = async ({
@@ -23,14 +40,14 @@ export const createGroupBuy = async ({
   product_image,
 }) => {
   const formData = new FormData();
-  formData.append('region', region);
-  formData.append('product_name', product_name);
-  formData.append('price', String(price));
-  formData.append('place', place);
-  formData.append('number_of_people', String(number_of_people));
+  formData.append('region', String(region));
+  formData.append('product_name', String(product_name));
+  formData.append('price', String(Number(price)));
+  formData.append('place', String(place));
+  formData.append('number_of_people', String(Number(number_of_people)));
 
-  if (description) {
-    formData.append('description', description);
+  if (description !== undefined && description !== null && description !== '') {
+    formData.append('description', String(description));
   }
   if (product_image) {
     formData.append('product_image', product_image);
@@ -42,7 +59,7 @@ export const createGroupBuy = async ({
     },
   });
 
-  return response.data;
+  return parseResponseData(response.data);
 };
 
 export const updateGroupBuy = async (
@@ -57,30 +74,32 @@ export const updateGroupBuy = async (
     product_image,
   }
 ) => {
+  const id = normalizeBuyId(buyId);
   const formData = new FormData();
-  formData.append('region', region);
-  formData.append('product_name', product_name);
-  formData.append('price', String(price));
-  formData.append('place', place);
-  formData.append('number_of_people', String(number_of_people));
+  formData.append('region', String(region));
+  formData.append('product_name', String(product_name));
+  formData.append('price', String(Number(price)));
+  formData.append('place', String(place));
+  formData.append('number_of_people', String(Number(number_of_people)));
 
-  if (description !== undefined) {
-    formData.append('description', description);
+  if (description !== undefined && description !== null) {
+    formData.append('description', String(description));
   }
   if (product_image) {
     formData.append('product_image', product_image);
   }
 
-  const response = await apiClient.put(`/api/group_buy/${buyId}`, formData, {
+  const response = await apiClient.put(`/api/group_buy/${id}`, formData, {
     headers: {
       'Content-Type': undefined,
     },
   });
 
-  return response.data;
+  return parseResponseData(response.data);
 };
 
 export const joinGroupBuy = async (buyId) => {
-  const response = await apiClient.post(`/api/group_buy/${buyId}/participants`);
-  return response.data;
+  const id = normalizeBuyId(buyId);
+  const response = await apiClient.post(`/api/group_buy/${id}/participants`);
+  return parseResponseData(response.data);
 };
