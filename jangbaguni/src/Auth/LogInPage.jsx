@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../Main/Layout';
+import { loginUser } from '../API/auth';
 import './LogInPage.css';
 
 export default function LoginPage() {
@@ -9,9 +10,10 @@ export default function LoginPage() {
   // 입력 폼 상태 관리
   const [userId, setUserId] = useState('');
   const [userPw, setUserPw] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // DB 연동 전 임시(Mock) 로그인 핸들러
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
     if (!userId.trim() || !userPw.trim()) {
@@ -19,9 +21,35 @@ export default function LoginPage() {
       return;
     }
 
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userName', '이승민');
-    navigate('/');
+    setIsLoading(true);
+    try {
+      // 백엔드 Request Body 스키마({ username, password })에 맞춰 요청
+      const data = await loginUser(userId, userPw);
+      console.log('로그인 성공 응답:', data);
+
+      // Swagger 200 응답이 토큰 문자열("string") 또는 객체({ access_token })인 경우 모두 대응
+      const token = typeof data === 'string' ? data : data?.access_token;
+      if (token) {
+        localStorage.setItem('access_token', token);
+      }
+
+      // 기존 프론트엔드 로그인 상태 관리 키 유지
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userName', userId);
+
+      navigate('/products');
+    } catch (error) {
+      console.error('로그인 실패:', error.response?.data);
+      if (error.response?.status === 404) {
+        alert('로그인 API 경로를 찾을 수 없습니다. src/api/auth.js의 경로를 확인해 주세요.');
+      } else if (error.response?.status === 422) {
+        alert('아이디 또는 비밀번호 입력 형식이 올바르지 않습니다.');
+      } else {
+        alert(error.response?.data?.detail || '아이디 또는 비밀번호가 일치하지 않습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 회원가입 버튼 클릭 시 약관동의(Step 1/2)로 이동
@@ -59,7 +87,11 @@ export default function LoginPage() {
           />
 
           {/* 로그인 / 회원가입 액션 버튼 */}
-          <button type="submit" className="auth-primary-btn login-submit-btn">
+          <button 
+            type="submit" 
+            className="auth-primary-btn login-submit-btn"
+            disabled={isLoading}
+          >
             로그인
           </button>
           <button
