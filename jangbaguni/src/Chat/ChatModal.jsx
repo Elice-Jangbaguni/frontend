@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import './ChatModal.css';
 
+
+// 채팅방 목록 더미 데이터
 const INITIAL_CHAT_ROOMS = [
   {
     id: 1,
@@ -31,6 +35,7 @@ const INITIAL_CHAT_ROOMS = [
   },
 ];
 
+// 채팅방별 메시지 더미 데이터
 const INITIAL_MESSAGES = {
   1: [
     { id: 101, sender: 'me', text: '안녕하세요! 키친타올 공구 참여하고 싶어서 연락드렸어요.', time: '오후 4:20' },
@@ -47,16 +52,19 @@ const INITIAL_MESSAGES = {
 };
 
 export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
+  // 선택된 채팅방 및 메시지 입력 상태 관리
   const [selectedRoom, setSelectedRoom] = useState(initialRoom);
   const [chatRooms, setChatRooms] = useState(INITIAL_CHAT_ROOMS);
   const [messagesMap, setMessagesMap] = useState(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
 
+  // 초기 진입 채팅방 동기화
   useEffect(() => {
     setSelectedRoom(initialRoom);
   }, [initialRoom, isOpen]);
 
+  // 새 메시지 수신 시 스크롤 하단 고정
   useEffect(() => {
     if (selectedRoom) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -65,6 +73,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
 
   if (!isOpen) return null;
 
+  // 채팅방 입장 및 읽음 처리
   const handleSelectRoom = (room) => {
     setSelectedRoom(room);
     setChatRooms((prev) =>
@@ -72,10 +81,12 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
     );
   };
 
+  // 채팅방 목록으로 뒤로가기
   const handleBackToList = () => {
     setSelectedRoom(null);
   };
 
+  // 메시지 전송 핸들러
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputText.trim() || !selectedRoom) return;
@@ -114,6 +125,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
   return (
     <div className="chat-modal-overlay" onClick={onClose}>
       <div className="chat-modal-container" onClick={(e) => e.stopPropagation()}>
+        {/* 모달 상단 헤더 */}
         <div className="chat-modal-header">
           {selectedRoom ? (
             <div className="chat-header-room-info">
@@ -123,7 +135,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
                 onClick={handleBackToList}
                 aria-label="목록으로 돌아가기"
               >
-                ←
+                <FontAwesomeIcon icon={faArrowLeft} />
               </button>
               <div className="chat-header-titles">
                 <h3 className="chat-partner-name">{selectedRoom.productTitle}</h3>
@@ -140,18 +152,21 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
             onClick={onClose}
             aria-label="닫기"
           >
-            ✕
+            <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
 
+        {/* 채팅방 목록 뷰 */}
         {!selectedRoom ? (
           <div className="chat-room-list">
+            {/* 비어 있는 경우 */}
             {chatRooms.length === 0 ? (
               <div className="chat-empty-state">
                 <p>진행 중인 공구 채팅이 없어요 🛒</p>
                 <span>관심 있는 공동구매에 참여해 대화를 시작해보세요!</span>
               </div>
             ) : (
+              // 채팅방 정보
               chatRooms.map((room) => (
                 <div
                   key={room.id}
@@ -182,12 +197,15 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
             )}
           </div>
         ) : (
+          /* 채팅방 상세 대화 뷰 */
           <div className="chat-room-view">
+            {/* 상단 공구 상품 정보 배너 */}
             <div className="chat-product-banner">
               <span className="banner-tag">{selectedRoom.status}</span>
               <span className="banner-title">{selectedRoom.productTitle}</span>
             </div>
 
+            {/* 메시지 내역 영역 */}
             <div className="chat-messages-area">
               {currentMessages.map((msg) => (
                 <div
@@ -206,6 +224,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* 하단 메시지 입력 폼 */}
             <form className="chat-input-form" onSubmit={handleSendMessage}>
               <input
                 type="text"

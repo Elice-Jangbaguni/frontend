@@ -14,7 +14,7 @@ export default function MainPage() {
   
   return (
     <Layout>
-      {/* 상단 다크 배너 */}
+      {/* 메인 상단 다크 배너 */}
       <div className="top-banner">
         <span>혼자 사는 집 식료품 & 생필품 관리, 고민된다면?</span>
         <button className="banner-link" onClick={handleGoToLogin}>
@@ -24,7 +24,7 @@ export default function MainPage() {
 
       {/* 메인 히어로 섹션 */}
       <section className="main-section">
-        {/* 둥둥 떠있는 이모지 파티클 */}
+        {/* 히어로 배경 플로팅 이모지 */}
         <div className="floating-emoji top-left">🥦</div>
         <div className="floating-emoji top-right">🍎</div>
         <div className="floating-emoji bottom-left">🧻</div>
@@ -47,7 +47,7 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* 왜 '장바구니'를 써야 할까요? 특징 섹션 */}
+      {/* 서비스 핵심 기능 섹션 */}
       <section className="why-section">
         <div className="why-header">
           <h2 className="why-title">왜 ‘장바구니’를 써야 할까요?</h2>

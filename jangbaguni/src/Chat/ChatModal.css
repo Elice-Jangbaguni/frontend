@@ -1,38 +1,35 @@
-/* 모달 오버레이 */
+/* 모달 오버레이 및 컨테이너 */
 .chat-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(18, 18, 18, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
   z-index: 1000;
   font-family: 'Pretendard', sans-serif;
 }
 
-/* 모달 본체 */
 .chat-modal-container {
   background-color: #FEFEFE;
-  width: 90%;
+  width: 100%;
   max-width: 520px;
   height: 640px;
   max-height: 85vh;
-  border-radius: 16px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
-/* 모달 헤더 */
+/* 모달 상단 헤더 */
 .chat-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 23px 25px;
+  padding: 22px 26px;
   border-bottom: 1px solid #D9D9D9;
   background-color: #FEFEFE;
   flex-shrink: 0;
@@ -40,7 +37,7 @@
 
 .chat-modal-title {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #172A46;
 }
@@ -91,29 +88,34 @@
   text-overflow: ellipsis;
 }
 
-/* 닫기 버튼 */
 .chat-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
+  border-radius: 8px;
   font-size: 20px;
   color: #595959;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .chat-close-btn:hover {
   color: #172A46;
+  background-color: #F1F5F9;
 }
 
-/* 1. 채팅방 목록 뷰 */
+/* 채팅방 목록 뷰 */
 .chat-room-list {
   flex: 1;
   overflow-y: auto;
   background-color: #FEFEFE;
 }
 
+/* 비어 있는 경우 */
 .chat-empty-state {
   height: 100%;
   display: flex;
@@ -138,6 +140,7 @@
   color: #595959;
 }
 
+/* 채팅방 정보 */
 .chat-room-item {
   display: flex;
   align-items: center;
@@ -185,12 +188,11 @@
   color: #172A46;
 }
 
-/* 모집중 배지 */
 .chat-status-badge {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 8px;
+  border-radius: 999px;
 }
 
 .chat-status-badge.active {
@@ -254,7 +256,7 @@
   flex-shrink: 0;
 }
 
-/* 2. 채팅방 상세 뷰 */
+/* 채팅방 상세 대화 뷰 */
 .chat-room-view {
   flex: 1;
   display: flex;
@@ -263,6 +265,7 @@
   background-color: #F8FAFC;
 }
 
+/* 상단 공구 상품 정보 배너 */
 .chat-product-banner {
   display: flex;
   align-items: center;
@@ -292,6 +295,7 @@
   text-overflow: ellipsis;
 }
 
+/* 메시지 내역 영역 */
 .chat-messages-area {
   flex: 1;
   overflow-y: auto;
@@ -346,7 +350,7 @@
   flex-shrink: 0;
 }
 
-/* 하단 입력 폼 */
+/* 하단 메시지 입력 폼 */
 .chat-input-form {
   display: flex;
   align-items: center;

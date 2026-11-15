@@ -1,39 +1,13 @@
-/* 회원가입 페이지 전체 영역 중앙 정렬 및 배경 */
-.signup-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 150px;
-}
+/* 회원가입 정보 입력 페이지 전용 스타일 (공통 인증 스타일은 MainPage.css에서 관리) */
 
-/* 헤더 및 스텝 영역 */
-.signup-header-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 60px;
-}
-
-.signup-title {
-  text-align: center;
-  font-family: Pretendard;
-  font-size: 55px;
-  font-weight: 800;
-  color: #121212;
-  margin-top: 50px;
-  margin-bottom: 20px;
-  letter-spacing: 2%;
-}
-
-/* 스텝 인디케이터 */
+/* 상단 진행 단계 표시 */
 .step-indicator {
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 15px;
   font-weight: 600;
-  color: #a0a5b1;
+  color: #8E8E8E;
 }
 
 .step-indicator .step.active {
@@ -43,75 +17,45 @@
 
 .step-arrow {
   font-size: 12px;
-  color: #c4c8d0;
+  color: #8E8E8E;
 }
 
-.signup-form {
+/* 폼 라벨 및 유효성 안내 메시지 */
+.auth-form .form-group {
   display: flex;
   flex-direction: column;
-  width: 440px;
-  gap: 25px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
-/* 라벨 + 상태 메세지 배치 */
-.label-wrapper {
+.auth-form .label-wrapper {
   display: flex;
   align-items: baseline;
   gap: 10px;
 }
 
-.form-label {
-  font-size: 18px;
+.auth-form .form-label {
+  font-size: 16px;
   font-weight: 700;
-  color: #1a2536;
+  color: #172A46;
   text-align: left;
-  margin-left: 4px;
+  margin-left: 2px;
 }
 
-/* 유효성 검사 결과 메세지 */
-.status-message {
-  font-size: 14px;
+.auth-form .status-message {
+  font-size: 13px;
   font-weight: 500;
 }
 
-.status-message.success {
-  color: #0088FF; /* 파란색 (긍정) */
+.auth-form .status-message.success {
+  color: #0088FF;
 }
 
-.status-message.error {
-  color: #C1121F; /* 빨간색 (부정) */
+.auth-form .status-message.error {
+  color: #C1121F;
 }
 
-.signup-form .form-input {
-  width: 100%;
-  height: 64px;
-  padding: 0 24px;
-  font-size: 18px;
-  border: 1px solid #8E8E8E;
-  border-radius: 10px;
-  background-color: #FEFEFE;
-  outline: none;
-  box-sizing: border-box;
-  color: #121212;
-  letter-spacing: 10%;
-  transition: border-color 0.2s ease;
-}
-
-.form-input::placeholder {
-  color: #595959;
-}
-
-.form-input:focus {
-  border-color: #C1121F;
-}
-
+/* 아이디 입력창 + 중복 확인 버튼 */
 .input-with-button {
   position: relative;
   display: flex;
@@ -119,29 +63,33 @@
   width: 100%;
 }
 
-.input-with-button .form-input {
-  padding-right: 120px;
+.input-with-button .auth-input {
+  padding-right: 116px;
 }
 
 .check-btn {
   position: absolute;
-  right: 12px;
-  width: 96px;
-  height: 40px;
+  right: 10px;
+  width: 92px;
+  height: 38px;
   background-color: #172A46;
   color: #FEFEFE;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-/* 생년월일 셀렉트 영역 */
+.check-btn:hover {
+  background-color: #0f1c30;
+}
+
+/* 생년월일 드롭다운 선택 필드 */
 .birth-select-group {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -154,37 +102,41 @@
 
 .form-select {
   width: 100%;
-  height: 64px;
-  padding: 0 24px;
-  font-size: 18px;
+  height: 58px;
+  padding: 0 36px 0 18px;
+  font-size: 16px;
+  font-weight: 500;
   border: 1px solid #8E8E8E;
   border-radius: 10px;
   background-color: #FEFEFE;
   outline: none;
-  box-sizing: border-box;
   color: #121212;
-  letter-spacing: 10%;
   transition: border-color 0.2s ease;
+  appearance: none;
   -webkit-appearance: none;
-  box-sizing: border-box;
+  cursor: pointer;
 }
 
-/* Font Awesome 아이콘 위치 지정 및 오버레이 설정 */
+.form-select:focus {
+  border-color: #172A46;
+}
+
 .select-icon {
   position: absolute;
-  right: 18px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 14px;
   color: #595959;
-  pointer-events: none; 
+  pointer-events: none;
 }
 
-.gender-group {
+/* 성별 라디오 버튼 선택 필드 */
+.auth-form .gender-group {
   flex-direction: row;
   align-items: center;
   gap: 24px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .radio-group {
@@ -197,9 +149,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
-  color: #222222;
+  color: #121212;
   cursor: pointer;
 }
 
@@ -210,20 +162,7 @@
   cursor: pointer;
 }
 
-.submit-btn {
-  width: 100%;
-  height: 64px;
-  margin-top: 20px;
-  background-color: #172A46;
-  color: #FEFEFE;
-  border: none;
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.submit-btn:hover {
-  background-color: #0f1c30;
+/* 가입완료 버튼 여백 */
+.signup-submit-btn {
+  margin-top: 16px;
 }

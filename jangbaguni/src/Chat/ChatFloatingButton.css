@@ -1,3 +1,4 @@
+/* 우측 하단 채팅 플로팅 버튼 */
 .chat-floating-btn {
   position: fixed;
   right: 32px;
@@ -5,8 +6,8 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #172A46; /* MainNavy */
-  color: #FEFEFE; /* White */
+  background-color: #172A46;
+  color: #FEFEFE;
   border: none;
   box-shadow: 0 8px 20px rgba(23, 42, 70, 0.25);
   display: flex;
@@ -31,6 +32,7 @@
   font-size: 26px;
 }
 
+/* 읽지 않은 메시지 수 배지 */
 .chat-floating-badge {
   position: absolute;
   top: -2px;
@@ -39,8 +41,8 @@
   height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  background-color: #C1121F; /* MainRed */
-  color: #FEFEFE; /* White */
+  background-color: #C1121F;
+  color: #FEFEFE;
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -49,6 +51,7 @@
   border: 2px solid #FEFEFE;
 }
 
+/* 반응형 미디어 쿼리 */
 @media (max-width: 640px) {
   .chat-floating-btn {
     right: 20px;

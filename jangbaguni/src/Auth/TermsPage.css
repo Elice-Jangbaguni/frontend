@@ -1,59 +1,6 @@
-/* 약관동의 페이지 전체 영역 중앙 정렬 및 배경 */
-.terms-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 150px;
-}
+/* 이용약관 동의 페이지 전용 스타일 (공통 인증·모달 스타일은 MainPage.css에서 관리) */
 
-/* 헤더 및 스텝 영역 */
-.terms-header-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 60px;
-}
-
-.terms-title {
-  text-align: center;
-  font-family: Pretendard, sans-serif;
-  font-size: 55px;
-  font-weight: 800;
-  color: #121212;
-  margin-top: 50px;
-  margin-bottom: 20px;
-  letter-spacing: 2%;
-}
-
-/* 스텝 인디케이터 */
-.step-indicator {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #8E8E8E;
-}
-
-.step-indicator .step.active {
-  color: #172A46;
-  font-weight: 700;
-}
-
-.step-arrow {
-  font-size: 12px;
-  color: #8E8E8E;
-}
-
-.terms-form {
-  display: flex;
-  flex-direction: column;
-  width: 440px;
-  gap: 25px;
-}
-
-/* 브라우저 기본 체크박스 숨김 */
+/* 커스텀 체크박스 숨김 */
 .hidden-checkbox {
   position: absolute;
   opacity: 0;
@@ -62,68 +9,66 @@
   margin: 0;
 }
 
-/* 전체 약관동의 박스 */
+/* 전체 약관 동의 박스 */
 .all-agree-box {
   width: 100%;
-  height: 64px;
+  height: 58px;
   background-color: #172A46;
   color: #FEFEFE;
   border-radius: 10px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 20px;
   gap: 12px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
-  transition: opacity 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .all-agree-box:hover {
-  opacity: 0.95;
+  background-color: #0f1c30;
 }
 
 .all-check-icon {
-  width: 20px;
-  font-size: 18px;
+  width: 18px;
+  font-size: 17px;
   color: #FEFEFE;
 }
 
-/* 약관 리스트 */
+/* 약관 동의 목록 */
 .terms-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 22px;
 }
 
 .terms-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 12px;
 }
 
 .terms-label-wrapper {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   cursor: pointer;
   user-select: none;
 }
 
-/* 체크 아이콘 기본 */
 .check-icon {
-  width: 20px;
-  font-size: 20px;
+  width: 18px;
+  font-size: 18px;
   color: #8E8E8E;
   transition: color 0.2s ease;
 }
 
-/* 체크 되었을 때 */
 .check-icon.checked {
   color: #172A46;
 }
@@ -134,132 +79,62 @@
   color: #121212;
 }
 
-/* 더보기 텍스트 */
 .more-link {
   font-size: 13px;
+  font-weight: 500;
   color: #8E8E8E;
   text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .more-link:hover {
   color: #172A46;
 }
 
-/* 하단 카드 바 */
+/* 다음 단계 이동 바 */
 .next-step-bar {
   width: 100%;
-  height: 64px;
-  margin-top: 20px;
+  height: 58px;
+  margin-top: 16px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 22px;
   font-size: 18px;
   font-weight: 600;
-  transition: all 0.25s ease;
-  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
   user-select: none;
 }
 
-/* 비활성화 상태 */
 .next-step-bar.disabled {
   background-color: #D9D9D9;
   color: #595959;
   cursor: not-allowed;
 }
 
-/* 활성화 상태 */
 .next-step-bar.enabled {
   background-color: #172A46;
   color: #FEFEFE;
   cursor: pointer;
 }
 
+.next-step-bar.enabled:hover {
+  background-color: #0f1c30;
+}
+
 .next-arrow-icon {
   font-size: 14px;
 }
 
-/* 모달 오버레이 및 본체 */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-/* 모달 메인 박스 */
-.modal-container {
-  background-color: #FEFEFE;
-  width: 90%;
-  max-width: 520px;
-  max-height: 80vh;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #D9D9D9;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #172A46;
-}
-
-.modal-close-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #595959;
-  cursor: pointer;
-}
-
-.modal-body {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-body pre {
+/* 약관 상세 모달 본문 텍스트 */
+.terms-modal-body pre {
   white-space: pre-wrap;
   font-family: 'Pretendard', sans-serif;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: #595959;
   margin: 0;
-}
-
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #D9D9D9;
-  display: flex;
-  justify-content: center;
-}
-
-.modal-confirm-btn {
-  background-color: #172A46;
-  color: #fefefe;
-  border: none;
-  padding: 14px 24px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
 }

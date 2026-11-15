@@ -5,10 +5,12 @@ import './LogInPage.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+
+  // 입력 폼 상태 관리
   const [userId, setUserId] = useState('');
   const [userPw, setUserPw] = useState('');
 
-  // 💡 DB 연동 전 임시(Mock) 로그인 핸들러
+  // DB 연동 전 임시(Mock) 로그인 핸들러
   const handleLoginSubmit = (e) => {
     e.preventDefault();
 
@@ -17,30 +19,31 @@ export default function LoginPage() {
       return;
     }
 
-    // localStorage에 임시 로그인 상태 및 유저 정보 저장
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userName', '이승민');
-
-    // 메인 페이지(또는 재고 관리/공동구매 페이지)로 이동
     navigate('/');
   };
 
-  // 회원가입 버튼 클릭 시 이동
+  // 회원가입 버튼 클릭 시 약관동의(Step 1/2)로 이동
   const handleGoToSignup = () => {
-    navigate('/signup');
+    navigate('/terms');
   };
 
   return (
+    // 푸터 숨김 레이아웃
     <Layout showFooter={false}>
-      {/* 타이틀 */}
-      <h2 className="login-title">로그인</h2>
+      {/* 상단 페이지 타이틀 */}
+      <div className="auth-header-area">
+        <h2 className="auth-title">로그인</h2>
+      </div>
 
-      {/* 로그인 폼 섹션 */}
-      <section className="login-section">
-        <form className="login-form" onSubmit={handleLoginSubmit}>
+      {/* 로그인 입력 폼 섹션 */}
+      <section className="auth-section">
+        <form className="auth-form login-form" onSubmit={handleLoginSubmit}>
+          {/* 아이디 / 비밀번호 입력 필드 */}
           <input
             type="text"
-            className="id-field"
+            className="auth-input"
             id="userid"
             placeholder="아이디"
             value={userId}
@@ -48,19 +51,20 @@ export default function LoginPage() {
           />
           <input
             type="password"
-            className="pw-field"
+            className="auth-input"
             id="userpw"
             placeholder="비밀번호"
             value={userPw}
             onChange={(e) => setUserPw(e.target.value)}
           />
 
-          <button type="submit" className="login-btn">
+          {/* 로그인 / 회원가입 액션 버튼 */}
+          <button type="submit" className="auth-primary-btn login-submit-btn">
             로그인
           </button>
-          <button 
-            type="button" 
-            className="signup-btn"
+          <button
+            type="button"
+            className="auth-secondary-btn"
             onClick={handleGoToSignup}
           >
             회원가입

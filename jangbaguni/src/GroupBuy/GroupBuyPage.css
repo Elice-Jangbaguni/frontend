@@ -1,152 +1,121 @@
-.groupbuy-area {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 0px 30px 50px 30px;
-}
+/* 공동구매 페이지 전용 스타일 (공통 레이아웃은 MainPage.css에서 관리) */
 
+/* 섹션 하단 간격 */
 .groupbuy-section {
-  margin-bottom: 25px;
+  margin-bottom: 48px;
 }
 
-.section-header {
-  display: flex;
-  align-items: end;
-  gap: 12px;
-  margin-bottom: 40px;
-}
-
-/* 공구 헤더 & 버튼 정렬 레이아웃 */
-.section-header-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 20px;
-}
-
-.section-header-area .section-title {
+.groupbuy-section:last-child {
   margin-bottom: 0;
 }
 
-/* 공구 열기 버튼 */
+/* 공구 열기 버튼 및 지역 태그 */
 .create-btn {
+  height: 46px;
   background-color: #172A46;
   color: #FEFEFE;
-  font-family: 'Pretendard', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   border: none;
-  border-radius: 14px;
-  padding: 12px 24px;
+  border-radius: 10px;
+  padding: 0 20px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
 
-.section-title {
-  text-align: left;
-  font-family: Pretendard;
-  font-size: 33px;
-  font-weight: 800;
-  color: #121212;
-  margin-top: 50px;
-  margin-bottom: 40px;
-  letter-spacing: 2%;
-}
-
-.section-header .section-title {
-  margin-bottom: 0;
+.create-btn:hover {
+  background-color: #0f1c30;
+  transform: translateY(-1px);
 }
 
 .location-tag {
   border: 1.5px solid #C1121F;
   color: #C1121F;
-  height: 100%;
+  font-size: 14px;
   font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 20px;
+  padding: 6px 14px;
+  border-radius: 999px;
   background-color: #FEFEFE;
 }
 
-.card-box {
-  background-color: #F8FAFC;
-  border: 1px solid #D9D9D9;
-  border-radius: 12px;
-  padding: 24px;
-}
-
-/* 참여 중인 공구 가로 슬라이더 CSS */
+/* 참여 중인 공구 가로 슬라이더 */
 .card-slider {
   display: flex;
-  gap: 23px;
+  gap: 20px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
 }
 
-/* 스크롤바 스타일링 */
 .card-slider::-webkit-scrollbar {
-  height: 8px;
+  height: 7px;
 }
 
 .card-slider::-webkit-scrollbar-track {
-  background: #D9D9D9;
-  border-radius: 10px;
+  background: #E2E8F0;
+  border-radius: 999px;
 }
 
 .card-slider::-webkit-scrollbar-thumb {
   background: #8E8E8E;
-  border-radius: 10px;
+  border-radius: 999px;
 }
 
 .card-slider::-webkit-scrollbar-thumb:hover {
   background: #595959;
 }
 
-/* 슬라이더 내부 카드의 고정 너비 지정 */
 .slider-card {
-  flex: 0 0 calc((100% - (16px * 5)) / 5.5);
-  min-width: 160px;
+  flex: 0 0 calc((100% - (20px * 4)) / 5.2);
+  min-width: 170px;
   scroll-snap-align: start;
 }
 
-/* 우리 동네 공구 그리드 CSS */
+/* 우리 동네 공구 카드 그리드 */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 25px;
+  gap: 24px;
 }
 
-/* 공통 개별 카드 CSS */
+/* 개별 공구 상품 카드 */
 .groupbuy-card {
   display: flex;
   flex-direction: column;
-  cursor: pointer
-  margin 20px 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.groupbuy-card:hover {
+  transform: translateY(-3px);
 }
 
 .image-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  background-color: #FEFEFE;
+  border: 1px solid #E2E8F0;
 }
 
 .status-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 10px;
+  left: 10px;
   background-color: #C1121F;
   color: #FEFEFE;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 6px 9px;
-  border-radius: 10px;
+  padding: 5px 10px;
+  border-radius: 8px;
   z-index: 1;
 }
 
@@ -164,8 +133,8 @@
 }
 
 .product-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #172A46;
   margin: 0;
   line-height: 1.35;
@@ -175,22 +144,36 @@
 }
 
 .product-price {
-  font-size: 14px;
+  font-size: 15px;
   color: #595959;
   margin: 0;
 }
 
 .product-price strong {
-  font-size: 15px;
+  font-size: 17px;
   color: #C1121F;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .product-place {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   color: #595959;
-  margin: 0;
+  margin: 2px 0 0;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
+}
+
+/* 반응형 미디어 쿼리 */
+@media (max-width: 960px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
 }

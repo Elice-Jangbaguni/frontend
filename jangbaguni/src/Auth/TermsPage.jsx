@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { faCheck, faXmark, faCaretRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faXmark, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
 import './TermsPage.css';
 
-// 약관 전문 데이터
+// 약관 내용 데이터
 const TERMS_DATA = {
   service: {
     title: '(필수) 서비스 이용 약관',
@@ -46,14 +46,15 @@ const TERMS_DATA = {
 export default function TermsPage() {
   const navigate = useNavigate();
 
+  // 약관별 동의 여부 및 상세 모달 상태 관리
   const [agreements, setAgreements] = useState({
     service: false,
     privacy: false,
     location: false,
   });
-
   const [modalKey, setModalKey] = useState(null);
 
+  // 개별 약관 체크박스 토글
   const handleToggle = (key) => {
     setAgreements((prev) => ({
       ...prev,
@@ -61,6 +62,7 @@ export default function TermsPage() {
     }));
   };
 
+  // 전체 약관 동의 상태 판별 및 일괄 토글
   const isAllChecked = Object.values(agreements).every(Boolean);
   const handleToggleAll = () => {
     const nextState = !isAllChecked;
@@ -71,22 +73,23 @@ export default function TermsPage() {
     });
   };
 
-  // 필수 약관 동의 여부 검사
+  // 필수 약관 동의 확인 및 다음 단계(정보 입력) 이동
   const isRequiredAgreed = agreements.service && agreements.privacy;
-
-  // 다음 단계 이동 (회원가입 폼으로 라우팅)
   const handleNextStep = () => {
     if (!isRequiredAgreed) return;
-    navigate('/signup'); 
+    navigate('/signup');
   };
 
+  // 약관 상세 모달 열기/닫기
   const openModal = (key) => setModalKey(key);
   const closeModal = () => setModalKey(null);
 
   return (
+    // 푸터 숨김 레이아웃
     <Layout showFooter={false}>
-      <div className="terms-header-area">
-        <h2 className="terms-title">이용약관 동의</h2>
+      {/* 상단 페이지 타이틀 및 진행 단계 */}
+      <div className="auth-header-area">
+        <h2 className="auth-title">이용약관 동의</h2>
         <div className="step-indicator">
           <span className="step active">Step 1/2 약관동의</span>
           <FontAwesomeIcon icon={faCaretRight} className="step-arrow" />
@@ -94,9 +97,10 @@ export default function TermsPage() {
         </div>
       </div>
 
-      <main className="terms-section">
-        <div className="terms-form">
-          {/* 전체 약관동의 */}
+      {/* 약관 동의 섹션 */}
+      <main className="auth-section">
+        <div className="auth-form terms-form">
+          {/* 전체 약관 동의 */}
           <label className={`all-agree-box ${isAllChecked ? 'active' : ''}`}>
             <input
               type="checkbox"
@@ -108,7 +112,7 @@ export default function TermsPage() {
             <span>전체 약관동의</span>
           </label>
 
-          {/* 약관 리스트 */}
+          {/* 약관 동의 목록 */}
           <ul className="terms-list">
             <li className="terms-item">
               <label className="terms-label-wrapper">
@@ -162,7 +166,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          {/* 하단 네비게이션 바 */}
+          {/* 다음 단계 이동 */}
           <div
             className={`next-step-bar ${isRequiredAgreed ? 'enabled' : 'disabled'}`}
             onClick={handleNextStep}
@@ -179,11 +183,16 @@ export default function TermsPage() {
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{TERMS_DATA[modalKey].title}</h3>
-              <button type="button" className="modal-close-btn" onClick={closeModal}>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={closeModal}
+                aria-label="닫기"
+              >
                 <FontAwesomeIcon icon={faXmark} />
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body terms-modal-body">
               <pre>{TERMS_DATA[modalKey].content}</pre>
             </div>
             <div className="modal-footer">
