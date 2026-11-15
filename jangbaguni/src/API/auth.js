@@ -1,6 +1,7 @@
 // src/api/auth.js
 import apiClient from './client';
 
+
 export const loginUser = async (username, password) => {
   const response = await apiClient.post('/api/auth/login', { // 실제 로그인 경로로 수정
     username,
@@ -22,7 +23,6 @@ const response = await apiClient.get('/api/auth/check-username', {
   return response.data; 
 }
 
-// src/API/auth.js
 export const logoutUser = async () => {
   const response = await apiClient.post('/api/auth/logout');
   return response.data;
