@@ -2,7 +2,7 @@
 .chat-floating-btn {
   position: fixed;
   right: 32px;
-  bottom: 32px;
+  bottom: calc(32px + env(safe-area-inset-bottom));
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -15,17 +15,21 @@
   justify-content: center;
   cursor: pointer;
   z-index: 950;
-  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
-.chat-floating-btn:hover {
-  opacity: 0.94;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(23, 42, 70, 0.32);
+@media (hover: hover) {
+  .chat-floating-btn:hover {
+    opacity: 0.94;
+    transform: translate3d(0, -3px, 0);
+    box-shadow: 0 12px 24px rgba(23, 42, 70, 0.32);
+  }
 }
 
 .chat-floating-btn:active {
-  transform: translateY(0);
+  transform: scale(0.96);
 }
 
 .chat-floating-icon {
@@ -52,10 +56,11 @@
 }
 
 /* 반응형 미디어 쿼리 */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .chat-floating-btn {
     right: 20px;
-    bottom: 20px;
+    top: calc(100svh - 80px);
+    bottom: auto;
     width: 54px;
     height: 54px;
   }

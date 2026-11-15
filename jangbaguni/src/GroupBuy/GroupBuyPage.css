@@ -25,6 +25,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .create-btn:hover {
@@ -40,6 +41,7 @@
   padding: 6px 14px;
   border-radius: 999px;
   background-color: #FEFEFE;
+  white-space: nowrap;
 }
 
 /* 참여 중인 공구 가로 슬라이더 */
@@ -87,6 +89,7 @@
 .groupbuy-card {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
@@ -172,8 +175,64 @@
   }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 768px) {
+  .groupbuy-section {
+    margin-bottom: 36px;
+  }
+
+  .create-btn {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    gap: 6px;
+  }
+
+  .location-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .card-slider {
+    gap: 12px;
+  }
+
+  .slider-card {
+    flex: 0 0 142px;
+    min-width: 142px;
+  }
+
   .card-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .image-wrapper {
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+
+  .status-badge {
+    top: 8px;
+    left: 8px;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  .product-title {
+    font-size: 14px;
+  }
+
+  .product-price {
+    font-size: 13px;
+  }
+
+  .product-price strong {
+    font-size: 15px;
+  }
+
+  .product-place {
+    font-size: 12px;
   }
 }

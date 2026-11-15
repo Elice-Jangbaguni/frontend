@@ -8,3 +8,13 @@
 .login-submit-btn {
   margin-top: 10px;
 }
+
+@media (max-width: 768px) {
+  .login-form {
+    gap: 14px;
+  }
+
+  .login-submit-btn {
+    margin-top: 6px;
+  }
+}

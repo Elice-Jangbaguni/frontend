@@ -119,6 +119,7 @@ export default function GroupBuyPage() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
       />
+      
     </Layout>
   );
 }

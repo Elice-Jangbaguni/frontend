@@ -115,8 +115,7 @@ export default function ReceiptOCRModal({ onClose }) {
             </h2>
 
             <p>
-              카테고리별 <strong>평균 소비기한</strong>을 기준으로
-              임시 설정할 수 있어요.
+              카테고리별 <strong>평균 소비기한</strong>으로 임시 설정할 수 있어요.
               <br />
               실제 소비기한을 정확히 등록하려면 카메라로 찍어주세요!
             </p>

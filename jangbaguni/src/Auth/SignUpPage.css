@@ -166,3 +166,50 @@
 .signup-submit-btn {
   margin-top: 16px;
 }
+
+/* ... 기존 SignUpPage.css 코드 아래에 추가 ... */
+
+@media (max-width: 768px) {
+  .step-indicator {
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .auth-form .form-label {
+    font-size: 15px;
+  }
+
+  .input-with-button .auth-input {
+    padding-right: 100px;
+  }
+
+  .check-btn {
+    right: 8px;
+    width: 82px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .birth-select-group {
+    gap: 8px;
+  }
+
+  .form-select {
+    height: 50px;
+    padding: 0 28px 0 12px;
+    font-size: 15px;
+  }
+
+  .select-icon {
+    right: 12px;
+    font-size: 13px;
+  }
+
+  .radio-label {
+    font-size: 15px;
+  }
+
+  .signup-submit-btn {
+    margin-top: 10px;
+  }
+}
