@@ -422,22 +422,150 @@
   }
 }
 
-@media (max-width: 480px) {
-  .products-summary {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .products-section {
+    margin-bottom: 32px;
   }
+
+  /* 1. 재고 알림 카드: 모바일에서도 2열 그리드로 압축 */
+  .products-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .products-summary-card {
+    height: auto;
+    min-height: 98px;
+    padding: 14px 12px;
+    border-radius: 12px;
+    gap: 6px;
+  }
+
+  .products-summary-card p {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .products-summary-card h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .products-summary-card span {
+    font-size: 11px;
+  }
+
+  .products-summary-icon {
+    font-size: 22px;
+  }
+
+  /* 2. 카테고리 탭 & 검색창 컴팩트화 */
+  .products-controls {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .products-tabs {
+    gap: 6px;
+  }
+
   .products-tab {
+    flex: 1;
     min-width: auto;
-    padding: 0 14px;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .products-search-box {
+    height: 40px;
+    padding: 0 12px;
+  }
+
+  .products-search {
     font-size: 14px;
   }
+
+  /* 3. 재고 목록 테이블: 모바일에서 '카테고리(1열)' 숨기고 '세부 카테고리 | 상태 | 상품명' 우선 노출 */
   .products-list {
-    padding: 12px;
+    padding: 4px 10px 8px;
   }
+
+  .products-table {
+    min-width: 540px;
+  }
+
+  .products-table th:nth-child(1),
+  .products-table td:nth-child(1) {
+    display: none;
+  }
+
+  .products-table th:nth-child(2),
+  .products-table td:nth-child(2) { width: 22%; }
+  .products-table th:nth-child(3),
+  .products-table td:nth-child(3) { width: 16%; }
+  .products-table th:nth-child(4),
+  .products-table td:nth-child(4) { width: 26%; }
+  .products-table th:nth-child(5),
+  .products-table td:nth-child(5) { width: 24%; }
+  .products-table th:nth-child(6),
+  .products-table td:nth-child(6) { width: 12%; }
+
+  .products-table th {
+    height: 38px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .products-table td {
+    height: 50px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .products-status {
+    min-width: 46px;
+    height: 24px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .products-delete {
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+
+  /* 4. 하단 영수증 인식 플로팅 버튼 슬림화 */
   .products-upload {
     bottom: 20px;
+    gap: 8px;
   }
+
+  .products-upload-button {
+    width: 156px;
+    height: 44px;
+    padding: 0 18px;
+    gap: 10px;
+    font-size: 14px;
+  }
+
   .products-upload-menu {
-    width: min(340px, calc(100vw - 32px));
+    width: min(320px, calc(100vw - 32px));
+    padding: 14px 16px;
+  }
+
+  .products-upload-folder {
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+  }
+
+  .products-upload-text strong {
+    font-size: 14px;
+  }
+
+  .products-upload-text small {
+    font-size: 12px;
   }
 }

@@ -138,3 +138,48 @@
   color: #595959;
   margin: 0;
 }
+
+@media (max-width: 768px) {
+  .all-agree-box {
+    height: 50px;
+    padding: 0 16px;
+    font-size: 15px;
+    gap: 10px;
+  }
+
+  .all-check-icon {
+    font-size: 15px;
+  }
+
+  .terms-list {
+    gap: 16px;
+  }
+
+  .terms-item {
+    padding: 0 8px;
+  }
+
+  .terms-label-wrapper {
+    gap: 10px;
+  }
+
+  .check-icon {
+    font-size: 15px;
+  }
+
+  .terms-text {
+    font-size: 14px;
+  }
+
+  .more-link {
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .next-step-bar {
+    height: 50px;
+    margin-top: 10px;
+    padding: 0 18px;
+    font-size: 16px;
+  }
+}
