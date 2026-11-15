@@ -168,9 +168,14 @@ html {
 
 /* 유저 이름 */
 .user-name {
-  color: #172A46;
+  position: relative;
+  font-size: 18px;
   font-weight: 700;
+  color: #172A46;
   cursor: default;
+  padding-bottom: 4px;
+  user-select: none;
+  display: inline-block;
 }
 
 /* 로그아웃 */
@@ -421,9 +426,9 @@ html {
 }
 
 /* 헤더 메뉴 및 버튼 공통 스타일 */
-.product, .groupbuy, .user-name, .logout, .auth-text {
+.product, .groupbuy, .logout, .auth-text {
   position: relative;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   color: #121212;
   cursor: pointer;
