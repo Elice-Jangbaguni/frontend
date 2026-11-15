@@ -45,6 +45,7 @@ const mapDetailResponse = (data) => {
 
   return {
     id: data?.group_buy_id ?? data?.buy_id ?? data?.id ?? null,
+    userId: data?.user_id ?? null,
     region: data?.region || '서울특별시 성북구',
     currentPeople,
     numberOfPeople,
@@ -91,6 +92,7 @@ export default function GroupBuyDetailPage() {
       ? mapDetailResponse(location.state.groupBuy)
       : {
           id: initialBuyId,
+          userId: null,
           region: '서울특별시 성북구',
           currentPeople: 1,
           numberOfPeople: 2,
@@ -159,7 +161,11 @@ export default function GroupBuyDetailPage() {
       const updated = await updateGroupBuy(targetId, payload);
       console.log('공구 수정 성공:', updated);
 
-      if (updated && typeof updated === 'object' && (updated.group_buy_id || updated.buy_id || updated.id)) {
+      if (
+        updated &&
+        typeof updated === 'object' &&
+        (updated.group_buy_id || updated.buy_id || updated.id)
+      ) {
         setDetailData(mapDetailResponse(updated));
       } else {
         setDetailData((prev) => {
@@ -291,6 +297,14 @@ export default function GroupBuyDetailPage() {
     );
   }
 
+  const myUserId = localStorage.getItem('user_id');
+  const isOwner =
+    myUserId !== null &&
+    myUserId !== '' &&
+    detailData.userId !== null &&
+    detailData.userId !== undefined &&
+    String(detailData.userId) === String(myUserId);
+
   return (
     <Layout>
       <div className="detail-area">
@@ -304,9 +318,8 @@ export default function GroupBuyDetailPage() {
               />
             </div>
             <div className="seller-badge">
-              {detailData.user_id}
+              공구주 #{detailData.userId}
             </div>
-
           </div>
 
           <div className="detail-right">
@@ -337,23 +350,25 @@ export default function GroupBuyDetailPage() {
               ))}
             </div>
 
-            <div className="action-button-group">
-              <button type="button" className="edit-btn" onClick={handleEdit}>
-                수정
+            {isOwner ? (
+              <div className="action-button-group">
+                <button type="button" className="edit-btn" onClick={handleEdit}>
+                  수정
+                </button>
+                <button type="button" className="delete-btn" onClick={handleDelete}>
+                  삭제
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="chat-btn"
+                onClick={handleChat}
+                disabled={isJoining}
+              >
+                {isJoining ? '참여 중...' : '채팅'}
               </button>
-              <button type="button" className="delete-btn" onClick={handleDelete}>
-                삭제
-              </button>
-            </div>
-
-            <button
-              type="button"
-              className="chat-btn"
-              onClick={handleChat}
-              disabled={isJoining}
-            >
-              {isJoining ? '참여 중...' : '채팅'}
-            </button>
+            )}
           </div>
         </div>
       </div>
