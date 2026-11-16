@@ -52,6 +52,7 @@ const mapDetailResponse = (data) => {
   return {
     id: data?.buy_id ?? data?.group_buy_id ?? data?.id ?? null,
     userId: data?.user_id ?? null,
+    username: typeof data?.username === 'string' ? data.username.trim() : '',
     isOwner: Boolean(data?.is_owner),
     region: data?.region || '서울특별시 성북구',
     currentPeople,
@@ -91,6 +92,7 @@ export default function GroupBuyDetailPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedChatRoom, setSelectedChatRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(initialBuyId));
+  const [isDetailFetched, setIsDetailFetched] = useState(!initialBuyId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -98,10 +100,18 @@ export default function GroupBuyDetailPage() {
 
   const [detailData, setDetailData] = useState(() =>
     location.state?.groupBuy
-      ? mapDetailResponse(location.state.groupBuy)
+      ? {
+          ...mapDetailResponse(location.state.groupBuy),
+          // 목록 state에는 username이 없을 수 있으므로 상세 조회 전에는 비워 둠
+          username:
+            typeof location.state.groupBuy?.username === 'string'
+              ? location.state.groupBuy.username.trim()
+              : '',
+        }
       : {
           id: initialBuyId,
           userId: null,
+          username: '',
           isOwner: false,
           region: '서울특별시 성북구',
           currentPeople: 1,
@@ -122,6 +132,7 @@ export default function GroupBuyDetailPage() {
     let isMounted = true;
     const fetchDetail = async () => {
       setIsLoading(true);
+      setIsDetailFetched(false);
       setErrorMessage('');
       try {
         const data = await getGroupBuyDetail(initialBuyId);
@@ -131,6 +142,7 @@ export default function GroupBuyDetailPage() {
             ...mapDetailResponse(data),
             id: data?.buy_id ?? data?.group_buy_id ?? data?.id ?? initialBuyId,
           }));
+          setIsDetailFetched(true);
         }
       } catch (error) {
         if (isMounted) {
@@ -142,6 +154,7 @@ export default function GroupBuyDetailPage() {
           setErrorMessage(
             error.response?.data?.detail || '공구 상세 정보를 불러오지 못했습니다.'
           );
+          setIsDetailFetched(true);
         }
       } finally {
         if (isMounted) {
@@ -347,6 +360,15 @@ export default function GroupBuyDetailPage() {
     );
   }
 
+  // 상세 조회가 완료된 뒤에만 공구주 이름을 표시
+  const sellerLabel = !isDetailFetched
+    ? ''
+    : detailData.username
+      ? `${detailData.username} 님`
+      : detailData.userId !== null && detailData.userId !== undefined
+        ? `#${detailData.userId}`
+        : '';
+
   return (
     <Layout>
       <div className="detail-area">
@@ -364,11 +386,7 @@ export default function GroupBuyDetailPage() {
                 }}
               />
             </div>
-            {detailData.userId !== null && detailData.userId !== undefined && (
-              <div className="seller-badge">
-                공구주 #{detailData.userId}
-              </div>
-            )}
+            {sellerLabel && <div className="seller-badge">{sellerLabel}</div>}
           </div>
 
           <div className="detail-right">
