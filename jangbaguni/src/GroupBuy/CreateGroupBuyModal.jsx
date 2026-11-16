@@ -1,18 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faCamera, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './CreateGroupBuyModal.css';
 
-export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
+const INITIAL_FORM_DATA = {
+  region: '서울특별시 성북구',
+  product_name: '',
+  price: '',
+  place: '',
+  number_of_people: '',
+  description: '',
+};
+
+export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmitting = false }) {
   // 공구 작성 입력 폼 데이터 상태 관리
-  const [formData, setFormData] = useState({
-    neighborhood: '서울특별시 성북구',
-    title: '',
-    price: '',
-    location: '',
-    capacity: '',
-    description: ''
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
+
+  // 첨부 이미지 파일 및 미리보기 URL 상태
+  const [productImage, setProductImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const fileInputRef = useRef(null);
+
+  // 입력 폼 및 첨부 이미지 상태 초기화
+  const resetForm = useCallback(() => {
+    setFormData(INITIAL_FORM_DATA);
+    setProductImage(null);
+    setPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  // 선택된 이미지 파일의 미리보기 URL 생성 및 해제
+  useEffect(() => {
+    if (!productImage) {
+      setPreviewUrl('');
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(productImage);
+    setPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [productImage]);
+
+  // 모달이 닫힐 때 입력값 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen, resetForm]);
 
   // 숫자 추출 후 천 단위 콤마 및 '원' 부착 헬퍼
   const handlePriceChange = (e) => {
@@ -29,6 +68,13 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    resetForm();
+    if (onClose) {
+      onClose();
+    }
+  };
+
   // 일반 텍스트 입력 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,31 +89,80 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setFormData((prev) => ({
       ...prev,
-      capacity: numericValue
+      number_of_people: numericValue
     }));
   };
 
-  // 공구 작성 제출 핸들러
-  const handleSubmit = (e) => {
+  // 이미지 파일 첨부 핸들러
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 첨부할 수 있습니다.');
+      e.target.value = '';
+      return;
+    }
+
+    setProductImage(file);
+  };
+
+  // 첨부 이미지 제거 핸들러
+  const handleRemoveImage = () => {
+    setProductImage(null);
+    setPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // 공동구매 생성 API(POST /api/group_buy) 전송용 payload 구성 후 상위 핸들러 호출
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim()) {
+
+    const numericPrice = Number(formData.price.replace(/[^0-9]/g, ''));
+    const numericCapacity = Number(formData.number_of_people.replace(/[^0-9]/g, ''));
+
+    if (!formData.product_name.trim()) {
       alert('제품명을 입력해주세요.');
       return;
     }
-    if (onSubmit) {
-      onSubmit(formData);
+    if (!numericPrice) {
+      alert('1인당 부담금을 입력해주세요.');
+      return;
     }
-    alert('공구가 작성되었습니다!');
-    onClose();
+    if (!formData.place.trim()) {
+      alert('픽업 장소를 입력해주세요.');
+      return;
+    }
+    if (numericCapacity < 2) {
+      alert('모집 인원은 최소 2명 이상이어야 합니다.');
+      return;
+    }
+
+    const payload = {
+      region: formData.region,
+      product_name: formData.product_name.trim(),
+      price: numericPrice,
+      place: formData.place.trim(),
+      number_of_people: numericCapacity,
+      description: formData.description.trim(),
+      product_image: productImage || undefined,
+    };
+
+    if (onSubmit) {
+      await onSubmit(payload);
+    }
+    resetForm();
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop" onClick={handleClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         {/* 상단 헤더 */}
         <div className="modal-header">
           <h3>공구 작성</h3>
-          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="닫기">
+          <button type="button" className="modal-close-btn" onClick={handleClose} aria-label="닫기">
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
@@ -79,23 +174,66 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
             <div className="label-wrapper">
               <label className="form-label">동네</label>
             </div>
-            {/* 동네 표시 배지 */}
             <div className="neighborhood-badge">
-              {formData.neighborhood}
+              {formData.region}
+            </div>
+          </div>
+
+          {/* 제품 이미지 첨부 */}
+          <div className="form-group">
+            <div className="label-wrapper">
+              <label htmlFor="product_image" className="form-label">제품 사진</label>
+              <span className="status-message success">선택 사항</span>
+            </div>
+            <div className="image-upload-box">
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="product_image"
+                name="product_image"
+                accept="image/*"
+                className="image-upload-input"
+                onChange={handleImageChange}
+              />
+              {previewUrl ? (
+                <div className="image-preview-wrapper">
+                  <img
+                    src={previewUrl}
+                    alt="첨부 제품 미리보기"
+                    className="image-preview"
+                  />
+                  <div className="image-preview-meta">
+                    <span className="image-file-name">{productImage?.name}</span>
+                    <button
+                      type="button"
+                      className="image-remove-btn"
+                      onClick={handleRemoveImage}
+                    >
+                      <FontAwesomeIcon icon={faTrash} /> 사진 삭제
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label htmlFor="product_image" className="image-upload-trigger">
+                  <FontAwesomeIcon icon={faCamera} className="image-upload-icon" />
+                  <span className="image-upload-text">사진을 첨부하려면 클릭하세요</span>
+                  <span className="image-upload-subtext">JPG, PNG, WEBP 이미지 지원</span>
+                </label>
+              )}
             </div>
           </div>
 
           {/* 제품명 */}
           <div className="form-group">
             <div className="label-wrapper">
-              <label htmlFor="title" className="form-label">제품명</label>
+              <label htmlFor="product_name" className="form-label">제품명</label>
             </div>
             <input
               type="text"
-              id="title"
-              name="title"
+              id="product_name"
+              name="product_name"
               className="write-input"
-              value={formData.title}
+              value={formData.product_name}
               onChange={handleChange}
               placeholder="제품명을 입력해주세요."
             />
@@ -132,17 +270,17 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
           {/* 픽업 장소 */}
           <div className="form-group">
             <div className="label-wrapper">
-              <label htmlFor="location" className="form-label">픽업 장소</label>
+              <label htmlFor="place" className="form-label">픽업 장소</label>
               <span className="status-message success">
                 상의 후 변경 가능합니다.
               </span>
             </div>
             <input
               type="text"
-              id="location"
-              name="location"
+              id="place"
+              name="place"
               className="write-input"
-              value={formData.location}
+              value={formData.place}
               onChange={handleChange}
               placeholder="픽업 장소를 입력해주세요."
             />
@@ -151,15 +289,15 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
           {/* 모집 인원 (명) */}
           <div className="form-group">
             <div className="label-wrapper">
-              <label htmlFor="capacity" className="form-label">모집 인원 (명)</label>
+              <label htmlFor="number_of_people" className="form-label">모집 인원 (명)</label>
             </div>
             <input
               type="text"
               inputMode="numeric"
-              id="capacity"
-              name="capacity"
+              id="number_of_people"
+              name="number_of_people"
               className="write-input"
-              value={formData.capacity}
+              value={formData.number_of_people}
               onChange={handleCapacityChange}
               placeholder="모집 인원을 입력해주세요."
             />
@@ -183,8 +321,13 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit }) {
 
         {/* 하단 푸터 */}
         <div className="modal-footer">
-          <button type="submit" form="create-groupbuy-form" className="modal-confirm-btn">
-            작성 완료
+          <button
+            type="submit"
+            form="create-groupbuy-form"
+            className="modal-confirm-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '작성 중...' : '작성 완료'}
           </button>
         </div>
       </div>
