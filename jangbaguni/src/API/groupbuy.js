@@ -12,6 +12,14 @@ const parseResponseData = (data) => {
   return data;
 };
 
+const normalizeBuyId = (buyId) => {
+  const numericId = Number(buyId);
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    throw new Error(`유효하지 않은 buy_id입니다: ${buyId}`);
+  }
+  return numericId;
+};
+
 export const getRegionGroupBuyList = async (region) => {
   const response = await apiClient.get('/api/group_buy', {
     params: { region },
@@ -95,6 +103,12 @@ export const updateGroupBuy = async (
     },
   });
 
+  return parseResponseData(response.data);
+};
+
+export const deleteGroupBuy = async (buyId) => {
+  const id = normalizeBuyId(buyId);
+  const response = await apiClient.delete(`/api/group_buy/${id}`);
   return parseResponseData(response.data);
 };
 

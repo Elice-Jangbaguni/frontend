@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Layout from '../Main/Layout';
 import EditGroupBuyModal from './EditGroupBuyModal';
 import ChatFloatingButton from '../Chat/ChatFloatingButton';
 import ChatModal from '../Chat/ChatModal';
-import { getGroupBuyDetail, updateGroupBuy, joinGroupBuy } from '../API/groupbuy';
+import {
+  getGroupBuyDetail,
+  updateGroupBuy,
+  deleteGroupBuy,
+  joinGroupBuy,
+} from '../API/groupbuy';
 import './GroupBuyDetailPage.css';
 
 const BACKEND_BASE_URL =
@@ -32,33 +37,35 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
 };
 
 const mapDetailResponse = (data) => {
-  const statusRaw = data?.group_buy_status ?? data?.status;
+  const statusRaw = data?.status ?? data?.group_buy_status;
   const currentPeople = data?.current_people ?? 1;
   const numberOfPeople = data?.number_of_people ?? 2;
   const statusText = getStatusLabel(statusRaw, currentPeople, numberOfPeople);
 
-  const rawPrice = data?.price_per_person ?? data?.price;
+  const rawPrice = data?.price ?? data?.price_per_person;
   const formattedPrice =
     typeof rawPrice === 'number'
       ? rawPrice.toLocaleString('ko-KR')
       : String(rawPrice ?? '');
 
   return {
-    id: data?.group_buy_id ?? data?.buy_id ?? data?.id ?? null,
+    id: data?.buy_id ?? data?.group_buy_id ?? data?.id ?? null,
     userId: data?.user_id ?? null,
+    isOwner: Boolean(data?.is_owner),
     region: data?.region || '서울특별시 성북구',
     currentPeople,
     numberOfPeople,
     badge: `${statusText} (${currentPeople}/${numberOfPeople}명)`,
     title: data?.product_name || '',
     price: formattedPrice,
-    location: data?.pickup_place ?? data?.place ?? '',
+    location: data?.place ?? data?.pickup_place ?? '',
     imageUrl: getImageUrl(data?.product_image_path),
     description: data?.description || '',
   };
 };
 
 export default function GroupBuyDetailPage() {
+  const navigate = useNavigate();
   const { buyId: paramBuyId } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -67,8 +74,8 @@ export default function GroupBuyDetailPage() {
     paramBuyId ??
     searchParams.get('buyId') ??
     location.state?.buyId ??
-    location.state?.groupBuy?.group_buy_id ??
     location.state?.groupBuy?.buy_id ??
+    location.state?.groupBuy?.group_buy_id ??
     location.state?.groupBuy?.id;
 
   const initialBuyId =
@@ -84,6 +91,7 @@ export default function GroupBuyDetailPage() {
   const [selectedChatRoom, setSelectedChatRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(initialBuyId));
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -93,6 +101,7 @@ export default function GroupBuyDetailPage() {
       : {
           id: initialBuyId,
           userId: null,
+          isOwner: false,
           region: '서울특별시 성북구',
           currentPeople: 1,
           numberOfPeople: 2,
@@ -118,7 +127,7 @@ export default function GroupBuyDetailPage() {
           setDetailData((prev) => ({
             ...prev,
             ...mapDetailResponse(data),
-            id: data?.group_buy_id ?? data?.buy_id ?? data?.id ?? initialBuyId,
+            id: data?.buy_id ?? data?.group_buy_id ?? data?.id ?? initialBuyId,
           }));
         }
       } catch (error) {
@@ -164,15 +173,18 @@ export default function GroupBuyDetailPage() {
       if (
         updated &&
         typeof updated === 'object' &&
-        (updated.group_buy_id || updated.buy_id || updated.id)
+        (updated.buy_id || updated.group_buy_id || updated.id)
       ) {
-        setDetailData(mapDetailResponse(updated));
+        setDetailData((prev) => ({
+          ...prev,
+          ...mapDetailResponse(updated),
+        }));
       } else {
         setDetailData((prev) => {
           const nextCurrent = prev.currentPeople ?? 1;
           const nextTotal = payload.number_of_people;
           const nextStatus = getStatusLabel(
-            updated?.group_buy_status ?? updated?.status,
+            updated?.status ?? updated?.group_buy_status,
             nextCurrent,
             nextTotal
           );
@@ -214,8 +226,41 @@ export default function GroupBuyDetailPage() {
     }
   };
 
-  const handleDelete = () => {
-    alert('정말 삭제하시겠습니까?');
+  const handleDelete = async () => {
+    const targetId = detailData.id ?? initialBuyId;
+    if (!targetId) {
+      alert('공구 ID를 찾을 수 없습니다.');
+      return;
+    }
+
+    const confirmed = window.confirm('정말 삭제하시겠습니까?');
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      const deleted = await deleteGroupBuy(targetId);
+      console.log('공구 삭제 성공:', deleted);
+      alert('공구가 삭제되었습니다.');
+      navigate('/groupbuy', { replace: true });
+    } catch (error) {
+      console.error(
+        '공구 삭제 실패:',
+        error.response?.status,
+        error.response?.data || error.message
+      );
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail?.[0];
+        alert(
+          `요청 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
+            detail?.msg || '공구 ID를 확인해 주세요.'
+          }`
+        );
+      } else {
+        alert(error.response?.data?.detail || '공구 삭제 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleChat = async () => {
@@ -238,7 +283,7 @@ export default function GroupBuyDetailPage() {
             : prev.currentPeople);
         const total = joined?.number_of_people ?? prev.numberOfPeople ?? 2;
         const statusText = getStatusLabel(
-          joined?.group_buy_status ?? joined?.status,
+          joined?.status ?? joined?.group_buy_status,
           nextCurrent,
           total
         );
@@ -297,14 +342,6 @@ export default function GroupBuyDetailPage() {
     );
   }
 
-  const myUserId = localStorage.getItem('user_id');
-  const isOwner =
-    myUserId !== null &&
-    myUserId !== '' &&
-    detailData.userId !== null &&
-    detailData.userId !== undefined &&
-    String(detailData.userId) === String(myUserId);
-
   return (
     <Layout>
       <div className="detail-area">
@@ -315,11 +352,18 @@ export default function GroupBuyDetailPage() {
                 src={detailData.imageUrl}
                 alt={detailData.title}
                 className="detail-product-image"
+                onError={(e) => {
+                  if (e.currentTarget.src !== FALLBACK_IMAGE) {
+                    e.currentTarget.src = FALLBACK_IMAGE;
+                  }
+                }}
               />
             </div>
-            <div className="seller-badge">
-              공구주 #{detailData.userId}
-            </div>
+            {detailData.userId !== null && detailData.userId !== undefined && (
+              <div className="seller-badge">
+                공구주 #{detailData.userId}
+              </div>
+            )}
           </div>
 
           <div className="detail-right">
@@ -350,13 +394,18 @@ export default function GroupBuyDetailPage() {
               ))}
             </div>
 
-            {isOwner ? (
+            {detailData.isOwner ? (
               <div className="action-button-group">
                 <button type="button" className="edit-btn" onClick={handleEdit}>
                   수정
                 </button>
-                <button type="button" className="delete-btn" onClick={handleDelete}>
-                  삭제
+                <button
+                  type="button"
+                  className="delete-btn"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? '삭제 중...' : '삭제'}
                 </button>
               </div>
             ) : (
