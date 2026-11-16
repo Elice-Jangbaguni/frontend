@@ -8,7 +8,7 @@ const apiClient = axios.create({
   },
 });
 
-// 이후 인증이 필요한 API 요청 시 로컬 스토리지의 토큰을 자동으로 헤더에 포함
+// 요청 시 localStorage에 저장된 access_token이 있으면 Authorization 헤더에 자동 첨부
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
