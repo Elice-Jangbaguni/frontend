@@ -87,7 +87,7 @@ export default function SignupPage() {
     }
   };
 
-  // 아이디 중복 확인 버튼 클릭
+  // 아이디 중복 확인 API 요청 핸들러 (GET /api/auth/check-username)
   const handleCheckDuplicate = async () => {
     const idRegex = /^[a-zA-Z0-9]{4,12}$/;
 
@@ -101,8 +101,8 @@ export default function SignupPage() {
     }
 
     try {
+      // 응답이 boolean 또는 { available: boolean } 형태인 경우 모두 대응
       const data = await checkUserName(formData.userId);
-      // 응답이 불리언 true이거나 객체 { available: true } 형태 모두 대응
       const isAvailable = data === true || data?.available === true;
 
       if (isAvailable) {
@@ -116,7 +116,7 @@ export default function SignupPage() {
     }
   };
 
-  // 회원가입 폼 제출 핸들러
+  // 회원가입 API 요청 폼 제출 핸들러 (POST /api/auth/signup)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -138,27 +138,30 @@ export default function SignupPage() {
       return;
     }
 
-    // 년/월/일 드롭다운 옵션 생성
+    // YYYY-MM-DD 형식의 생년월일 문자열 생성
     const formattedMonth = String(formData.birthMonth).padStart(2, '0');
     const formattedDay = String(formData.birthDay).padStart(2, '0');
     const formattedBirth = `${formData.birthYear}-${formattedMonth}-${formattedDay}`;
 
-    // 백엔드 Request Body 스키마와 정확히 일치하는 객체 조립
+    // 회원가입 API Request Body 스키마에 맞춘 페이로드 구성
     const payload = {
       username: formData.userId,
       password: formData.password,
       birth: formattedBirth,
-      gender: formData.gender, 
+      gender: formData.gender,
     };
 
     setIsLoading(true);
     try {
+      // 회원가입 요청 성공 시 로그인 페이지로 이동
       await signUpUser(payload);
-      navigate('/login'); // 실제 로그인 페이지 라우트 경로로 확인
+      navigate('/login');
     } catch (error) {
+      // 회원가입 API 에러 처리
       console.error('회원가입 실패:', error.response?.data);
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
+        alert(detail?.msg || '회원가입 입력 형식을 확인해 주세요.');
       } else {
         alert(error.response?.data?.detail || '회원가입 중 오류가 발생했습니다.');
       }
@@ -344,8 +347,8 @@ export default function SignupPage() {
           </div>
 
           {/* 가입완료 버튼 */}
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="auth-primary-btn signup-submit-btn"
             disabled={isLoading}
           >
