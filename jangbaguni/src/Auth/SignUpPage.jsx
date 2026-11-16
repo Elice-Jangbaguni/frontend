@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
+import { signUpUser, checkUserName } from '../API/auth';
 import './SignUpPage.css';
 
 export default function SignupPage() {
+  const navigate = useNavigate();
+
   // 회원가입 입력 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
     userId: '',
     password: '',
     passwordConfirm: '',
+    email: '',
     birthYear: '',
     birthMonth: '',
     birthDay: '',
@@ -20,6 +25,7 @@ export default function SignupPage() {
   const [userIdStatus, setUserIdStatus] = useState({ isChecked: false, isSuccess: false, message: '' });
   const [passwordStatus, setPasswordStatus] = useState({ isSuccess: false, message: '' });
   const [passwordConfirmStatus, setPasswordConfirmStatus] = useState({ isSuccess: false, message: '' });
+  const [isLoading, setIsLoading] = useState(false);
 
   // 비밀번호 실시간 세부 정규식 검사 함수
   const validatePassword = (pw) => {
@@ -30,17 +36,14 @@ export default function SignupPage() {
     if (!allowedCharsRegex.test(pw)) {
       return { isSuccess: false, message: '문자, 숫자, !@#$만 들어갈 수 있습니다.' };
     }
-
     // 2. 8글자 미만인 경우
     if (pw.length < 8) {
       return { isSuccess: false, message: '8글자 이상의 비밀번호를 입력해주세요.' };
     }
-
     // 3. 20자 초과인 경우
     if (pw.length > 20) {
       return { isSuccess: false, message: '20자 이내의 비밀번호를 입력해주세요.' };
     }
-
     // 모든 조건 만족
     return { isSuccess: true, message: '' };
   };
@@ -84,8 +87,8 @@ export default function SignupPage() {
     }
   };
 
-  // 아이디 중복 확인 버튼 클릭
-  const handleCheckDuplicate = () => {
+  // 아이디 중복 확인 API 요청 핸들러 (GET /api/auth/check-username)
+  const handleCheckDuplicate = async () => {
     const idRegex = /^[a-zA-Z0-9]{4,12}$/;
 
     if (!formData.userId.trim()) {
@@ -97,11 +100,73 @@ export default function SignupPage() {
       return;
     }
 
-    // 테스트 예시 ('seungmin' 입력 시 중복 처리)
-    if (formData.userId === 'seungmin') {
-      setUserIdStatus({ isChecked: true, isSuccess: false, message: '중복 아이디입니다.' });
-    } else {
-      setUserIdStatus({ isChecked: true, isSuccess: true, message: '사용 가능한 아이디 입니다.' });
+    try {
+      // 응답이 boolean 또는 { available: boolean } 형태인 경우 모두 대응
+      const data = await checkUserName(formData.userId);
+      const isAvailable = data === true || data?.available === true;
+
+      if (isAvailable) {
+        setUserIdStatus({ isChecked: true, isSuccess: true, message: '사용 가능한 아이디 입니다.' });
+      } else {
+        setUserIdStatus({ isChecked: true, isSuccess: false, message: '중복 아이디입니다.' });
+      }
+    } catch (error) {
+      console.error('아이디 중복 확인 에러:', error.response?.data);
+      setUserIdStatus({ isChecked: true, isSuccess: false, message: '중복 확인 중 오류가 발생했습니다.' });
+    }
+  };
+
+  // 회원가입 API 요청 폼 제출 핸들러 (POST /api/auth/signup)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // 필수 입력 및 유효성 검증
+    if (!userIdStatus.isSuccess) {
+      alert('아이디 중복 확인을 완료해 주세요.');
+      return;
+    }
+    if (!passwordStatus.isSuccess || !passwordConfirmStatus.isSuccess) {
+      alert('비밀번호를 올바르게 입력해 주세요.');
+      return;
+    }
+    if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) {
+      alert('생년월일을 모두 선택해 주세요.');
+      return;
+    }
+    if (!formData.gender) {
+      alert('성별을 선택해 주세요.');
+      return;
+    }
+
+    // YYYY-MM-DD 형식의 생년월일 문자열 생성
+    const formattedMonth = String(formData.birthMonth).padStart(2, '0');
+    const formattedDay = String(formData.birthDay).padStart(2, '0');
+    const formattedBirth = `${formData.birthYear}-${formattedMonth}-${formattedDay}`;
+
+    // 회원가입 API Request Body 스키마에 맞춘 페이로드 구성
+    const payload = {
+      username: formData.userId,
+      password: formData.password,
+      birth: formattedBirth,
+      gender: formData.gender,
+    };
+
+    setIsLoading(true);
+    try {
+      // 회원가입 요청 성공 시 로그인 페이지로 이동
+      await signUpUser(payload);
+      navigate('/login');
+    } catch (error) {
+      // 회원가입 API 에러 처리
+      console.error('회원가입 실패:', error.response?.data);
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail?.[0];
+        alert(detail?.msg || '회원가입 입력 형식을 확인해 주세요.');
+      } else {
+        alert(error.response?.data?.detail || '회원가입 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,7 +190,7 @@ export default function SignupPage() {
 
       {/* 회원가입 입력 폼 섹션 */}
       <section className="auth-section">
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
           {/* 아이디 입력 필드 */}
           <div className="form-group">
             <div className="label-wrapper">
@@ -282,7 +347,11 @@ export default function SignupPage() {
           </div>
 
           {/* 가입완료 버튼 */}
-          <button type="submit" className="auth-primary-btn signup-submit-btn">
+          <button
+            type="submit"
+            className="auth-primary-btn signup-submit-btn"
+            disabled={isLoading}
+          >
             가입완료
           </button>
         </form>
