@@ -19,6 +19,7 @@ const BACKEND_BASE_URL =
 const FALLBACK_IMAGE =
   'https://thumbnail.coupangcdn.com/thumbnails/remote/640x640ex/image/vendor_inventory/8510/5e1707958f1f47428c08acae84c9999c567455ffb11d7020f8887705d223.jpg';
 
+// 백엔드 상대 경로 이미지 URL을 전체 경로로 변환
 const getImageUrl = (imagePath) => {
   if (!imagePath) return FALLBACK_IMAGE;
   if (imagePath.startsWith('http')) return imagePath;
@@ -38,6 +39,7 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
+// 목록 API 응답({ group_buy: [...] } 또는 배열)에서 게시글 배열 추출
 const extractPosts = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.group_buy)) return data.group_buy;
@@ -59,6 +61,7 @@ export default function GroupBuyPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 지역별 공동구매 목록 API 조회 (GET /api/group_buy)
   const fetchGroupBuyList = useCallback(async (targetRegion) => {
     setIsLoading(true);
     try {
@@ -76,6 +79,7 @@ export default function GroupBuyPage() {
     }
   }, []);
 
+  // 내 참여 공동구매 목록 API 조회 (GET /api/group_buy/participants)
   const fetchMyGroupBuyList = useCallback(async () => {
     setIsMyLoading(true);
     try {
@@ -108,6 +112,7 @@ export default function GroupBuyPage() {
     });
   };
 
+  // 공동구매 생성 API 요청 및 목록 갱신 (POST /api/group_buy)
   const handleCreateGroupBuy = async (payload) => {
     setIsSubmitting(true);
     try {

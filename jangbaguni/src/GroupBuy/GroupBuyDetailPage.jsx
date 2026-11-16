@@ -36,6 +36,7 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
+// 상세/수정 API 응답 필드를 화면 렌더링용 상태로 매핑
 const mapDetailResponse = (data) => {
   const statusRaw = data?.status ?? data?.group_buy_status;
   const currentPeople = data?.current_people ?? 1;
@@ -114,6 +115,7 @@ export default function GroupBuyDetailPage() {
         }
   );
 
+  // 공동구매 상세 정보 API 조회 (GET /api/group_buy/{buy_id})
   useEffect(() => {
     if (!initialBuyId) return;
 
@@ -158,6 +160,7 @@ export default function GroupBuyDetailPage() {
     setIsEditModalOpen(true);
   };
 
+  // 공동구매 수정 API 요청 (PUT /api/group_buy/{buy_id})
   const handleUpdateSubmit = async (payload) => {
     const targetId = detailData.id ?? initialBuyId;
     if (!targetId) {
@@ -226,6 +229,7 @@ export default function GroupBuyDetailPage() {
     }
   };
 
+  // 공동구매 삭제 API 요청 (DELETE /api/group_buy/{buy_id})
   const handleDelete = async () => {
     const targetId = detailData.id ?? initialBuyId;
     if (!targetId) {
@@ -263,6 +267,7 @@ export default function GroupBuyDetailPage() {
     }
   };
 
+  // 공동구매 참여 등록 API 요청 (POST /api/group_buy/{buy_id}/participants)
   const handleChat = async () => {
     const targetId = detailData.id ?? initialBuyId;
     if (!targetId) {

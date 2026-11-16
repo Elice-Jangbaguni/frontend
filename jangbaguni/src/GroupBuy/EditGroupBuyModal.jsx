@@ -67,7 +67,7 @@ export default function EditGroupBuyModal({
     }));
   };
 
-  // 수정 완료 버튼 클릭 시에만 API 호출용 payload 전달
+  // 공동구매 수정 API(PUT /api/group_buy/{buy_id}) 전송용 payload 구성 후 상위 핸들러 호출
   const handleSubmit = async (e) => {
     e.preventDefault();
 

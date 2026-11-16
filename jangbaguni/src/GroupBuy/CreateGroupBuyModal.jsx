@@ -47,7 +47,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     }));
   };
 
-  // 공구 작성 제출 핸들러
+  // 공동구매 생성 API(POST /api/group_buy) 전송용 payload 구성 후 상위 핸들러 호출
   const handleSubmit = async (e) => {
     e.preventDefault();
 
