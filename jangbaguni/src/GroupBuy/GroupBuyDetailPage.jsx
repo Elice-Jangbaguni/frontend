@@ -36,6 +36,21 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
+const formatUploadedDate = (rawDate) => {
+  if (!rawDate) return '';
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) {
+    const str = String(rawDate).replace('T', ' ');
+    return str.slice(0, 16).replace(/-/g, '.');
+  }
+  const yyyy = parsed.getFullYear();
+  const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+  const dd = String(parsed.getDate()).padStart(2, '0');
+  const hh = String(parsed.getHours()).padStart(2, '0');
+  const min = String(parsed.getMinutes()).padStart(2, '0');
+  return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
+};
+
 // 상세/수정 API 응답 필드를 화면 렌더링용 상태로 매핑
 const mapDetailResponse = (data) => {
   const statusRaw = data?.status ?? data?.group_buy_status;
@@ -62,6 +77,7 @@ const mapDetailResponse = (data) => {
     price: formattedPrice,
     location: data?.place ?? data?.pickup_place ?? '',
     imageUrl: getImageUrl(data?.product_image_path),
+    uploadedDate: formatUploadedDate(data?.uploaded_date),
     description: data?.description || '',
   };
 };
@@ -102,7 +118,6 @@ export default function GroupBuyDetailPage() {
     location.state?.groupBuy
       ? {
           ...mapDetailResponse(location.state.groupBuy),
-          // 목록 state에는 username이 없을 수 있으므로 상세 조회 전에는 비워 둠
           username:
             typeof location.state.groupBuy?.username === 'string'
               ? location.state.groupBuy.username.trim()
@@ -121,6 +136,7 @@ export default function GroupBuyDetailPage() {
           price: '',
           location: '',
           imageUrl: FALLBACK_IMAGE,
+          uploadedDate: '',
           description: '',
         }
   );
@@ -360,13 +376,12 @@ export default function GroupBuyDetailPage() {
     );
   }
 
-  // 상세 조회가 완료된 뒤에만 공구주 이름을 표시
   const sellerLabel = !isDetailFetched
     ? ''
     : detailData.username
       ? `${detailData.username} 님`
       : detailData.userId !== null && detailData.userId !== undefined
-        ? `#${detailData.userId}`
+        ? `공구주 #${detailData.userId}`
         : '';
 
   return (
@@ -416,6 +431,10 @@ export default function GroupBuyDetailPage() {
                 </React.Fragment>
               ))}
             </div>
+
+            {detailData.uploadedDate && (
+              <div className="detail-date">{detailData.uploadedDate}</div>
+            )}
 
             {detailData.isOwner ? (
               <div className="action-button-group">
