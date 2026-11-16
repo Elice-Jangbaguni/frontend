@@ -47,6 +47,113 @@
   border-radius: 999px;
 }
 
+/* 제품 사진 첨부 영역 */
+.image-upload-box {
+  width: 100%;
+  border: 1px solid #8E8E8E;
+  border-radius: 10px;
+  background-color: #FEFEFE;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-upload-box:hover {
+  border-color: #172A46;
+  box-shadow: 0 0 0 3px rgba(23, 42, 70, 0.08);
+}
+
+.image-upload-input {
+  display: none;
+}
+
+.image-upload-trigger {
+  width: 100%;
+  min-height: 120px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.image-upload-icon {
+  font-size: 22px;
+  color: #172A46;
+  margin-bottom: 2px;
+}
+
+.image-upload-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #172A46;
+}
+
+.image-upload-subtext {
+  font-size: 13px;
+  font-weight: 500;
+  color: #595959;
+}
+
+.image-preview-wrapper {
+  width: 100%;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background-color: #FEFEFE;
+}
+
+.image-preview {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #D9D9D9;
+  flex-shrink: 0;
+}
+
+.image-preview-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.image-file-name {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: #172A46;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.image-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #C1121F;
+  background-color: #FEFEFE;
+  border: 1px solid #C1121F;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.image-remove-btn:hover {
+  background-color: rgba(193, 18, 31, 0.06);
+}
+
 /* 작성·수정 인풋 필드 */
 .write-input,
 .edit-input {

@@ -1,18 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faCamera, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './CreateGroupBuyModal.css';
+
+const INITIAL_FORM_DATA = {
+  region: '서울특별시 성북구',
+  product_name: '',
+  price: '',
+  place: '',
+  number_of_people: '',
+  description: '',
+};
 
 export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmitting = false }) {
   // 공구 작성 입력 폼 데이터 상태 관리
-  const [formData, setFormData] = useState({
-    region: '서울특별시 성북구',
-    product_name: '',
-    price: '',
-    place: '',
-    number_of_people: '',
-    description: ''
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
+
+  // 첨부 이미지 파일 및 미리보기 URL 상태
+  const [productImage, setProductImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const fileInputRef = useRef(null);
+
+  // 입력 폼 및 첨부 이미지 상태 초기화
+  const resetForm = useCallback(() => {
+    setFormData(INITIAL_FORM_DATA);
+    setProductImage(null);
+    setPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  // 선택된 이미지 파일의 미리보기 URL 생성 및 해제
+  useEffect(() => {
+    if (!productImage) {
+      setPreviewUrl('');
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(productImage);
+    setPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [productImage]);
+
+  // 모달이 닫힐 때 입력값 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen, resetForm]);
 
   // 숫자 추출 후 천 단위 콤마 및 '원' 부착 헬퍼
   const handlePriceChange = (e) => {
@@ -28,6 +67,13 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
   };
 
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    resetForm();
+    if (onClose) {
+      onClose();
+    }
+  };
 
   // 일반 텍스트 입력 핸들러
   const handleChange = (e) => {
@@ -45,6 +91,29 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
       ...prev,
       number_of_people: numericValue
     }));
+  };
+
+  // 이미지 파일 첨부 핸들러
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 첨부할 수 있습니다.');
+      e.target.value = '';
+      return;
+    }
+
+    setProductImage(file);
+  };
+
+  // 첨부 이미지 제거 핸들러
+  const handleRemoveImage = () => {
+    setProductImage(null);
+    setPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // 공동구매 생성 API(POST /api/group_buy) 전송용 payload 구성 후 상위 핸들러 호출
@@ -78,20 +147,22 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
       place: formData.place.trim(),
       number_of_people: numericCapacity,
       description: formData.description.trim(),
+      product_image: productImage || undefined,
     };
 
     if (onSubmit) {
       await onSubmit(payload);
     }
+    resetForm();
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop" onClick={handleClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         {/* 상단 헤더 */}
         <div className="modal-header">
           <h3>공구 작성</h3>
-          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="닫기">
+          <button type="button" className="modal-close-btn" onClick={handleClose} aria-label="닫기">
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
@@ -103,9 +174,52 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             <div className="label-wrapper">
               <label className="form-label">동네</label>
             </div>
-            {/* 동네 표시 배지 */}
             <div className="neighborhood-badge">
               {formData.region}
+            </div>
+          </div>
+
+          {/* 제품 이미지 첨부 */}
+          <div className="form-group">
+            <div className="label-wrapper">
+              <label htmlFor="product_image" className="form-label">제품 사진</label>
+              <span className="status-message success">선택 사항</span>
+            </div>
+            <div className="image-upload-box">
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="product_image"
+                name="product_image"
+                accept="image/*"
+                className="image-upload-input"
+                onChange={handleImageChange}
+              />
+              {previewUrl ? (
+                <div className="image-preview-wrapper">
+                  <img
+                    src={previewUrl}
+                    alt="첨부 제품 미리보기"
+                    className="image-preview"
+                  />
+                  <div className="image-preview-meta">
+                    <span className="image-file-name">{productImage?.name}</span>
+                    <button
+                      type="button"
+                      className="image-remove-btn"
+                      onClick={handleRemoveImage}
+                    >
+                      <FontAwesomeIcon icon={faTrash} /> 사진 삭제
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label htmlFor="product_image" className="image-upload-trigger">
+                  <FontAwesomeIcon icon={faCamera} className="image-upload-icon" />
+                  <span className="image-upload-text">사진을 첨부하려면 클릭하세요</span>
+                  <span className="image-upload-subtext">JPG, PNG, WEBP 이미지 지원</span>
+                </label>
+              )}
             </div>
           </div>
 
