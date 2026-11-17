@@ -22,30 +22,53 @@ export default function ProductsPage() {
     warning_count: 0,
     recommended_items: []
   });
-  const [loading, setLoading] = useState(true);  const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(true);  
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTab, setSelectedTab] = useState('전체'); // '전체', '식료품', '생필품'
 
   // 컴포넌트 마운트 시 제품 데이터 불러오기
   useEffect(() => {
-const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchProducts();
-      
-      // products와 summary 모두 상태에 저장
-      setProducts(Array.isArray(data) ? data : data.products || []);
-      if (data.summary) {
-        setSummary(data.summary);
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchProducts();
+        
+        // products와 summary 모두 상태에 저장
+        setProducts(Array.isArray(data) ? data : data.products || []);
+        if (data.summary) {
+          setSummary(data.summary);
+        }
+      } catch (error) {
+        console.error('제품 데이터 로드 실패:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('제품 데이터 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
     loadProducts();
   }, []);
+
+  // 탭 및 검색어로 제품 필터링 계산
+  const filteredProducts = products.filter((product) => {
+    // 카테고리 탭 필터링
+    const matchesTab = 
+      selectedTab === '전체' || 
+      product.category === selectedTab;
+
+    // 2검색어 필터링
+    const matchesSearch = 
+      product.product_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesTab && matchesSearch;
+  });
+
+  // 카테고리별 개수 동적 계산
+  const totalCount = products.length;
+  const groceryCount = products.filter(p => p.category === '식료품').length;
+  const necessityCount = products.filter(p => p.category === '생필품').length;
 
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm('정말 이 품목을 삭제하시겠습니까?')) return;
@@ -180,17 +203,28 @@ const loadProducts = async () => {
             {/* 카테고리 탭 및 품목 검색 */}
             <div className="products-controls">
               <div className="products-tabs">
-                <button type="button" className="products-tab products-tab-active">
-                  전체 ({products.length})
+              <button 
+                type="button" 
+                className={`products-tab ${selectedTab === '전체' ? 'products-tab-active' : ''}`}
+                onClick={() => setSelectedTab('전체')}
+              >
+                전체 ({totalCount})
                 </button>
-                <button type="button" className="products-tab">
-                  식료품 (3)
+                <button 
+                  type="button" 
+                  className={`products-tab ${selectedTab === '식료품' ? 'products-tab-active' : ''}`}
+                  onClick={() => setSelectedTab('식료품')}
+                >
+                  식료품 ({groceryCount})
                 </button>
-                <button type="button" className="products-tab">
-                  생필품 (2)
+                <button 
+                  type="button" 
+                  className={`products-tab ${selectedTab === '생필품' ? 'products-tab-active' : ''}`}
+                  onClick={() => setSelectedTab('생필품')}
+                >
+                  생필품 ({necessityCount})
                 </button>
               </div>
-
               <div className="products-search-box">
                 <FontAwesomeIcon className="products-search-icon" icon={faMagnifyingGlass} />
                 <input
@@ -198,7 +232,8 @@ const loadProducts = async () => {
                   className="products-search"
                   placeholder="품목 검색"
                   aria-label="품목 검색"
-                  readOnly
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)} // 입력할 때마다 검색어 실시간 반영
                 />
               </div>
             </div>
@@ -220,56 +255,57 @@ const loadProducts = async () => {
                     </tr>
                   </thead>
                   
-                  <tbody>
-                    {products.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="products-empty">등록된 품목이 없습니다.</td>
-                      </tr>
-                    ) : (
-                      products
-                        .slice()
-                        .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
-                        .map((product) => (
-                          <tr key={product.product_id || product.id}>
-                            <td>{product.category}</td>
-                            <td>{product.subcategory}</td>
-                            <td>
-                              {(() => {
-                                const { text, className } = getStatusLabel(product.status);
-                                return (
-                                  <span className={`products-status ${className}`}>
-                                    {text}
-                                  </span>
-                                );
-                              })()}
-                            </td>
-                            <td className="products-name">{product.product_name}</td>
-                            <td className="products-date">
-                              <span>{product.product_date?.replaceAll('-', '.')}</span>
-                              <span>{formatDday(product.dday)}</span>
-                            </td>
-                            <td>
-                              <div className="products-action-buttons">
-                                <button 
-                                  type="button" 
-                                  className="products-deplet"
-                                  onClick={() => handleDepleteProduct(product.product_id || product.id)}
-                                >                                  
-                                  소진
-                                </button>
-                                <button 
-                                  type="button" 
-                                  className="products-delete"
-                                  onClick={() => handleDeleteProduct(product.product_id || product.id)}
-                                >
-                                  삭제
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                    )}
-                  </tbody>
+                <tbody>
+                  {filteredProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="products-empty">검색된 품목이 없습니다.</td>
+                    </tr>
+                  ) : (
+                    filteredProducts
+                      .slice()
+                      .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
+                      .map((product) => (
+                        <tr key={product.product_id || product.id}>
+                          <td>{product.category}</td>
+                          <td>{product.subcategory}</td>
+                          <td>
+                            {(() => {
+                              const { text, className } = getStatusLabel(product.status);
+                              return (
+                                <span className={`products-status ${className}`}>
+                                  {text}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="products-name">{product.product_name}</td>
+                          <td className="products-date">
+                            <span>{product.product_date?.replaceAll('-', '.')}</span>
+                            <span>{formatDday(product.dday)}</span>
+                          </td>
+                          <td>
+                            <div className="products-action-buttons">
+                              <button 
+                                type="button" 
+                                className="products-deplet"
+                                onClick={() => handleDepleteProduct(product.product_id || product.id)}
+                              >                                  
+                                소진
+                              </button>
+                              <button 
+                                type="button" 
+                                className="products-delete"
+                                onClick={() => handleDeleteProduct(product.product_id || product.id)}
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+
                 </table>
               )}
             </div>
