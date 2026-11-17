@@ -162,7 +162,7 @@ export default function ProductsPage() {
                     <th>상태</th>
                     <th>상품명</th>
                     <th>기간</th>
-                    <th></th>
+                    <th>관리</th>
                   </tr>
                 </thead>
 
@@ -185,9 +185,15 @@ export default function ProductsPage() {
                           <span>{product.dday}</span>
                         </td>
                         <td>
-                          <button type="button" className="products-delete" disabled>
-                            삭제
-                          </button>
+                          {/* 버튼들을 감싸는 컨테이너 (CSS에서 flex 정렬 등 활용 가능) */}
+                          <div className="products-action-buttons">
+                            <button type="button" className="products-deplet" disabled>
+                              소진
+                            </button>
+                            <button type="button" className="products-delete" disabled>
+                              삭제
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
