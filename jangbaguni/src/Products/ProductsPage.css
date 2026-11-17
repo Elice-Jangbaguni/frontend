@@ -192,7 +192,7 @@
 .products-table td:nth-child(3) { width: 11%; }
 .products-table th:nth-child(4),
 .products-table td:nth-child(4) { width: 22%; text-align: left; }
-.products-table th:nth-child(5),
+.products-table th:nth-child(5) { text-align: left ; padding-left: 140px; }
 .products-table td:nth-child(5) { width: 30%; }
 .products-table th:nth-child(6),
 .products-table td:nth-child(6) { width: 10%; text-align: center; }
@@ -273,8 +273,10 @@
 
 /* 소비기한 날짜 및 D-Day */
 .products-date {
+  text-align: left !important;
+  padding-left: 140px !important;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums; 
   letter-spacing: -0.02em;
 }
 
@@ -443,6 +445,19 @@
   }
 }
 
+@media (max-width: 950px) {
+
+  .products-table th:nth-child(5) {text-align: left; padding-left: 85px;}
+
+  .products-date {
+    text-align: left !important;
+    padding-left: 85px !important;   
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1.3px;
+  }
+}
+
 @media (max-width: 768px) {
   .products-section {
     margin-bottom: 32px;
@@ -517,18 +532,18 @@
     min-width: 540px;
   }
 
-  .products-table th:nth-child(1),
-  .products-table td:nth-child(1) {
+  .products-table th:nth-child(2),
+  .products-table td:nth-child(2) {
     display: none;
   }
 
-  .products-table th:nth-child(2),
-  .products-table td:nth-child(2) { width: 22%; }
+  .products-table th:nth-child(1),
+  .products-table td:nth-child(1) { width: 16%; }
   .products-table th:nth-child(3),
   .products-table td:nth-child(3) { width: 16%; }
   .products-table th:nth-child(4),
   .products-table td:nth-child(4) { width: 26%; }
-  .products-table th:nth-child(5),
+  .products-table th:nth-child(5) {text-align: left; padding-left: 10px;}
   .products-table td:nth-child(5) { width: 24%; }
   .products-table th:nth-child(6),
   .products-table td:nth-child(6) { width: 15%; text-align: center;}
@@ -550,6 +565,14 @@
     height: 24px;
     padding: 0 8px;
     font-size: 12px;
+  }
+
+  .products-date {
+    text-align: left !important;
+    padding-left: 10px !important;   
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1.3px;
   }
 
   .products-deplet, .products-delete {

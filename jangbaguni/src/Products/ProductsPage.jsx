@@ -11,34 +11,106 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
 import ReceiptOCRModal from './ReceiptOCRModal';
-import { fetchProducts } from '../API/products';
+import { fetchProducts, deleteProduct,depleteProduct } from '../API/products';
 import './ProductsPage.css';
-
 
 export default function ProductsPage() {
   // 상태 관리 
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [uploadOpen, setUploadOpen] = useState(false);
+  const [summary, setSummary] = useState({
+    expired_count: 0,
+    warning_count: 0,
+    recommended_items: []
+  });
+  const [loading, setLoading] = useState(true);  const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
 
   // 컴포넌트 마운트 시 제품 데이터 불러오기
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProducts();
-        // 백엔드 응답 데이터 구조에 맞춰 설정
-        setProducts(Array.isArray(data) ? data : data.products || []);
-      } catch (error) {
-        console.error('제품 데이터 로드 실패:', error);
-      } finally {
-        setLoading(false);
+const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchProducts();
+      
+      // products와 summary 모두 상태에 저장
+      setProducts(Array.isArray(data) ? data : data.products || []);
+      if (data.summary) {
+        setSummary(data.summary);
       }
-    };
+    } catch (error) {
+      console.error('제품 데이터 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
     loadProducts();
   }, []);
+
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm('정말 이 품목을 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteProduct(productId);
+      // 삭제 성공 시 상태(state)에서 해당 제품을 필터링하여 UI 즉시 반영
+      setProducts((prevProducts) => 
+        prevProducts.filter((product) => 
+          (product.product_id || product.id) !== productId)
+      );
+    } catch (error) {
+      alert('제품 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'HEALTHY': return { text: '여유', className: 'status-여유' };
+      case 'WARNING': return { text: '임박', className: 'status-임박' };
+      case 'DEPLETED': return { text: '소진', className: 'status-소진' };
+      case 'EXPIRED': return { text: '폐기', className: 'status-폐기' };
+      default: return { text: status, className: '' };
+    }
+  };
+
+  const handleDepleteProduct = async (productId) => {
+    if (!window.confirm('이 품목을 소진 처리하시겠습니까?')) return;
+
+    try {
+      // 오늘 날짜를 YYYY-MM-DD 형식으로 생성
+      const today = new Date().toISOString().split('T')[0];
+      
+      await depleteProduct(productId, today);
+      
+      // 성공 시 상태를 업데이트하여 화면의 상태나 목록을 즉시 갱신 (예: 상태를 '소진'으로 변경)
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          (product.product_id || product.id) === productId
+            ? { ...product, status: '소진' }
+            : product
+        )
+      );
+    } catch (error) {
+      alert('제품 소진 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  // dday 숫자를 받아 화면 표시용 문자열로 변환하는 함수
+  const formatDday = (dday) => {
+    if (dday === null || dday === undefined) return '';
+    
+    // 0인 경우는 정확히 "D-day"로 표시
+    if (dday === 0) {
+      return 'D-day';
+    }
+    
+    // 양수일 때 (예: 31 -> D-31)
+    if (dday > 0) {
+      return `D-${dday}`;
+    }
+    
+    // 음수일 때 (예: -3 -> D+3 또는 기한 경과 표현)
+    return `D+${Math.abs(dday)}`;
+  };
 
   return (
     <Layout>
@@ -55,7 +127,7 @@ export default function ProductsPage() {
               <div className="products-summary-card summary-expired">
                 <div className="products-summary-content">
                   <p>소비기한 지남</p>
-                  <h2>품목 1개</h2>
+                  <h2>품목 {summary.expired_count}개</h2>
                   <span>즉시 확인 필요</span>
                 </div>
                 <FontAwesomeIcon className="products-summary-icon" icon={faTrashCan} />
@@ -64,29 +136,35 @@ export default function ProductsPage() {
               <div className="products-summary-card summary-warning">
                 <div className="products-summary-content">
                   <p>소비기한 임박</p>
-                  <h2>품목 1개</h2>
+                  <h2>품목 {summary.warning_count}개</h2>
                   <span>소비 권장</span>
                 </div>
                 <FontAwesomeIcon className="products-summary-icon" icon={faTriangleExclamation} />
               </div>
 
-              <div className="products-summary-card summary-ai">
-                <div className="products-summary-content">
-                  <p>AI 소진 예측</p>
-                  <h2>키친타올</h2>
-                  <span>이웃과 공구 추천</span>
+              {/* AI 소진 예측 및 공구 추천 카드 */}
+              {summary.recommended_items && summary.recommended_items.length > 0 ? (
+                summary.recommended_items.slice(0,2).map((item) => (
+                  <div key={item.product_id} className="products-summary-card summary-ai">
+                    <div className="products-summary-content">
+                      <p>AI 소진 예측</p>
+                      <h2>{item.product_name}</h2>
+                      <span>이웃과 공구 추천</span>
+                    </div>
+                    <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
+                  </div>
+                ))
+              ) : (
+                /* 추천 품목이 없을 경우 대체 뷰 */
+                <div className="products-summary-card summary-ai">
+                  <div className="products-summary-content">
+                    <p>AI 소진 예측</p>
+                    <h2>없음</h2>
+                    <span>모든 품목 여유로움</span>
+                  </div>
+                  <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
                 </div>
-                <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
-              </div>
-
-              <div className="products-summary-card summary-ai">
-                <div className="products-summary-content">
-                  <p>AI 소진 예측</p>
-                  <h2>세제</h2>
-                  <span>이웃과 공구 추천</span>
-                </div>
-                <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -156,21 +234,34 @@ export default function ProductsPage() {
                             <td>{product.category}</td>
                             <td>{product.subcategory}</td>
                             <td>
-                              <span className={`products-status status-${product.status}`}>
-                                {product.status}
-                              </span>
+                              {(() => {
+                                const { text, className } = getStatusLabel(product.status);
+                                return (
+                                  <span className={`products-status ${className}`}>
+                                    {text}
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td className="products-name">{product.product_name}</td>
                             <td className="products-date">
                               <span>{product.product_date?.replaceAll('-', '.')}</span>
-                              <span>{product.dday}</span>
+                              <span>{formatDday(product.dday)}</span>
                             </td>
                             <td>
                               <div className="products-action-buttons">
-                                <button type="button" className="products-deplet" disabled>
+                                <button 
+                                  type="button" 
+                                  className="products-deplet"
+                                  onClick={() => handleDepleteProduct(product.product_id || product.id)}
+                                >                                  
                                   소진
                                 </button>
-                                <button type="button" className="products-delete" disabled>
+                                <button 
+                                  type="button" 
+                                  className="products-delete"
+                                  onClick={() => handleDeleteProduct(product.product_id || product.id)}
+                                >
                                   삭제
                                 </button>
                               </div>

@@ -10,3 +10,25 @@ export const fetchProducts = async () => {
     throw error;
   }
 };
+
+export const deleteProduct = async (productId) => {
+  try {
+    const response = await apiClient.delete(`/api/products/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`제품 ID ${productId} 삭제 실패:`, error);
+    throw error;
+  }
+};
+
+export const depleteProduct = async (productId, depletedDate) => {
+  try {
+    const response = await apiClient.post(`/api/products/${productId}/deplete`, {
+      depleted_date: depletedDate, // 예: "2026-11-19" 형식
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`제품 ID ${productId} 소진 처리 실패:`, error);
+    throw error;
+  }
+};
