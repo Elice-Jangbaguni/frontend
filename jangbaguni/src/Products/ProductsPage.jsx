@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrashCan,
@@ -11,61 +11,34 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
 import ReceiptOCRModal from './ReceiptOCRModal';
+import { fetchProducts } from '../API/products';
 import './ProductsPage.css';
 
-// 재고 품목 더미 데이터
-const products = [
-  {
-    product_id: 1,
-    product_name: '우유',
-    category: '식료품',
-    subcategory: '유제품',
-    product_date: '2026-11-10',
-    status: '폐기',
-    dday: 'D+2',
-  },
-  {
-    product_id: 2,
-    product_name: '계란',
-    category: '식료품',
-    subcategory: '난류',
-    product_date: '2026-11-13',
-    status: '임박',
-    dday: 'D-1',
-  },
-  {
-    product_id: 3,
-    product_name: '사과',
-    category: '식료품',
-    subcategory: '과일',
-    product_date: '2026-11-19',
-    status: '여유',
-    dday: 'D-7',
-  },
-  {
-    product_id: 4,
-    product_name: '세제',
-    category: '생필품',
-    subcategory: '세탁용품',
-    product_date: '2026-11-14',
-    status: '임박',
-    dday: 'D-2',
-  },
-  {
-    product_id: 5,
-    product_name: '키친타올',
-    category: '생필품',
-    subcategory: '주방용품',
-    product_date: '2026-11-11',
-    status: '소진',
-    dday: 'D+1',
-  },
-];
 
 export default function ProductsPage() {
-  // 영수증 업로드 메뉴 및 OCR 모달 상태 관리
+  // 상태 관리 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+
+  // 컴포넌트 마운트 시 제품 데이터 불러오기
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchProducts();
+        // 백엔드 응답 데이터 구조에 맞춰 설정
+        setProducts(Array.isArray(data) ? data : data.products || []);
+      } catch (error) {
+        console.error('제품 데이터 로드 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   return (
     <Layout>
@@ -130,7 +103,7 @@ export default function ProductsPage() {
             <div className="products-controls">
               <div className="products-tabs">
                 <button type="button" className="products-tab products-tab-active">
-                  전체 (5)
+                  전체 ({products.length})
                 </button>
                 <button type="button" className="products-tab">
                   식료품 (3)
@@ -154,51 +127,60 @@ export default function ProductsPage() {
 
             {/* 재고 품목 목록 테이블 */}
             <div className="products-list">
-              <table className="products-table">
-                <thead>
-                  <tr>
-                    <th>카테고리</th>
-                    <th>세부 카테고리</th>
-                    <th>상태</th>
-                    <th>상품명</th>
-                    <th>기간</th>
-                    <th>관리</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {products
-                    .slice()
-                    .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
-                    .map((product) => (
-                      <tr key={product.product_id}>
-                        <td>{product.category}</td>
-                        <td>{product.subcategory}</td>
-                        <td>
-                          <span className={`products-status status-${product.status}`}>
-                            {product.status}
-                          </span>
-                        </td>
-                        <td className="products-name">{product.product_name}</td>
-                        <td className="products-date">
-                          <span>{product.product_date.replaceAll('-', '.')}</span>
-                          <span>{product.dday}</span>
-                        </td>
-                        <td>
-                          {/* 버튼들을 감싸는 컨테이너 (CSS에서 flex 정렬 등 활용 가능) */}
-                          <div className="products-action-buttons">
-                            <button type="button" className="products-deplet" disabled>
-                              소진
-                            </button>
-                            <button type="button" className="products-delete" disabled>
-                              삭제
-                            </button>
-                          </div>
-                        </td>
+              {loading ? (
+                <p className="products-loading">데이터를 불러오는 중입니다...</p>
+              ) : (
+                <table className="products-table">
+                  <thead>
+                    <tr>
+                      <th>카테고리</th>
+                      <th>세부 카테고리</th>
+                      <th>상태</th>
+                      <th>상품명</th>
+                      <th>기간</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  
+                  <tbody>
+                    {products.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="products-empty">등록된 품목이 없습니다.</td>
                       </tr>
-                    ))}
-                </tbody>
-              </table>
+                    ) : (
+                      products
+                        .slice()
+                        .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
+                        .map((product) => (
+                          <tr key={product.product_id || product.id}>
+                            <td>{product.category}</td>
+                            <td>{product.subcategory}</td>
+                            <td>
+                              <span className={`products-status status-${product.status}`}>
+                                {product.status}
+                              </span>
+                            </td>
+                            <td className="products-name">{product.product_name}</td>
+                            <td className="products-date">
+                              <span>{product.product_date?.replaceAll('-', '.')}</span>
+                              <span>{product.dday}</span>
+                            </td>
+                            <td>
+                              <div className="products-action-buttons">
+                                <button type="button" className="products-deplet" disabled>
+                                  소진
+                                </button>
+                                <button type="button" className="products-delete" disabled>
+                                  삭제
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </section>
