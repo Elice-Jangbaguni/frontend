@@ -36,6 +36,21 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
+const formatUploadedDate = (rawDate) => {
+  if (!rawDate) return '';
+  const parsed = new Date(rawDate);
+  if (Number.isNaN(parsed.getTime())) {
+    const str = String(rawDate).replace('T', ' ');
+    return str.slice(0, 16).replace(/-/g, '.');
+  }
+  const yyyy = parsed.getFullYear();
+  const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+  const dd = String(parsed.getDate()).padStart(2, '0');
+  const hh = String(parsed.getHours()).padStart(2, '0');
+  const min = String(parsed.getMinutes()).padStart(2, '0');
+  return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
+};
+
 // 상세/수정 API 응답 필드를 화면 렌더링용 상태로 매핑
 const mapDetailResponse = (data) => {
   const statusRaw = data?.status ?? data?.group_buy_status;
@@ -52,6 +67,7 @@ const mapDetailResponse = (data) => {
   return {
     id: data?.buy_id ?? data?.group_buy_id ?? data?.id ?? null,
     userId: data?.user_id ?? null,
+    username: typeof data?.username === 'string' ? data.username.trim() : '',
     isOwner: Boolean(data?.is_owner),
     region: data?.region || '서울특별시 성북구',
     currentPeople,
@@ -61,6 +77,7 @@ const mapDetailResponse = (data) => {
     price: formattedPrice,
     location: data?.place ?? data?.pickup_place ?? '',
     imageUrl: getImageUrl(data?.product_image_path),
+    uploadedDate: formatUploadedDate(data?.uploaded_date),
     description: data?.description || '',
   };
 };
@@ -91,6 +108,7 @@ export default function GroupBuyDetailPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedChatRoom, setSelectedChatRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(initialBuyId));
+  const [isDetailFetched, setIsDetailFetched] = useState(!initialBuyId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -98,10 +116,17 @@ export default function GroupBuyDetailPage() {
 
   const [detailData, setDetailData] = useState(() =>
     location.state?.groupBuy
-      ? mapDetailResponse(location.state.groupBuy)
+      ? {
+          ...mapDetailResponse(location.state.groupBuy),
+          username:
+            typeof location.state.groupBuy?.username === 'string'
+              ? location.state.groupBuy.username.trim()
+              : '',
+        }
       : {
           id: initialBuyId,
           userId: null,
+          username: '',
           isOwner: false,
           region: '서울특별시 성북구',
           currentPeople: 1,
@@ -111,6 +136,7 @@ export default function GroupBuyDetailPage() {
           price: '',
           location: '',
           imageUrl: FALLBACK_IMAGE,
+          uploadedDate: '',
           description: '',
         }
   );
@@ -122,6 +148,7 @@ export default function GroupBuyDetailPage() {
     let isMounted = true;
     const fetchDetail = async () => {
       setIsLoading(true);
+      setIsDetailFetched(false);
       setErrorMessage('');
       try {
         const data = await getGroupBuyDetail(initialBuyId);
@@ -131,6 +158,7 @@ export default function GroupBuyDetailPage() {
             ...mapDetailResponse(data),
             id: data?.buy_id ?? data?.group_buy_id ?? data?.id ?? initialBuyId,
           }));
+          setIsDetailFetched(true);
         }
       } catch (error) {
         if (isMounted) {
@@ -142,6 +170,7 @@ export default function GroupBuyDetailPage() {
           setErrorMessage(
             error.response?.data?.detail || '공구 상세 정보를 불러오지 못했습니다.'
           );
+          setIsDetailFetched(true);
         }
       } finally {
         if (isMounted) {
@@ -347,6 +376,14 @@ export default function GroupBuyDetailPage() {
     );
   }
 
+  const sellerLabel = !isDetailFetched
+    ? ''
+    : detailData.username
+      ? `${detailData.username} 님`
+      : detailData.userId !== null && detailData.userId !== undefined
+        ? `공구주 #${detailData.userId}`
+        : '';
+
   return (
     <Layout>
       <div className="detail-area">
@@ -364,11 +401,7 @@ export default function GroupBuyDetailPage() {
                 }}
               />
             </div>
-            {detailData.userId !== null && detailData.userId !== undefined && (
-              <div className="seller-badge">
-                공구주 #{detailData.userId}
-              </div>
-            )}
+            {sellerLabel && <div className="seller-badge">{sellerLabel}</div>}
           </div>
 
           <div className="detail-right">
@@ -398,6 +431,10 @@ export default function GroupBuyDetailPage() {
                 </React.Fragment>
               ))}
             </div>
+
+            {detailData.uploadedDate && (
+              <div className="detail-date">{detailData.uploadedDate}</div>
+            )}
 
             {detailData.isOwner ? (
               <div className="action-button-group">

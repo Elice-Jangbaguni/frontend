@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrashCan,
@@ -11,61 +11,129 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
 import ReceiptOCRModal from './ReceiptOCRModal';
+import { fetchProducts, deleteProduct,depleteProduct } from '../API/products';
 import './ProductsPage.css';
 
-// 재고 품목 더미 데이터
-const products = [
-  {
-    product_id: 1,
-    product_name: '우유',
-    category: '식료품',
-    subcategory: '유제품',
-    product_date: '2026-11-10',
-    status: '폐기',
-    dday: 'D+2',
-  },
-  {
-    product_id: 2,
-    product_name: '계란',
-    category: '식료품',
-    subcategory: '난류',
-    product_date: '2026-11-13',
-    status: '임박',
-    dday: 'D-1',
-  },
-  {
-    product_id: 3,
-    product_name: '사과',
-    category: '식료품',
-    subcategory: '과일',
-    product_date: '2026-11-19',
-    status: '여유',
-    dday: 'D-7',
-  },
-  {
-    product_id: 4,
-    product_name: '세제',
-    category: '생필품',
-    subcategory: '세탁용품',
-    product_date: '2026-11-14',
-    status: '임박',
-    dday: 'D-2',
-  },
-  {
-    product_id: 5,
-    product_name: '키친타올',
-    category: '생필품',
-    subcategory: '주방용품',
-    product_date: '2026-11-11',
-    status: '소진',
-    dday: 'D+1',
-  },
-];
-
 export default function ProductsPage() {
-  // 영수증 업로드 메뉴 및 OCR 모달 상태 관리
+  // 상태 관리 
+  const [products, setProducts] = useState([]);
+  const [summary, setSummary] = useState({
+    expired_count: 0,
+    warning_count: 0,
+    recommended_items: []
+  });
+  const [loading, setLoading] = useState(true);  
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTab, setSelectedTab] = useState('전체'); // '전체', '식료품', '생필품'
+
+  // 컴포넌트 마운트 시 제품 데이터 불러오기
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchProducts();
+        
+        // products와 summary 모두 상태에 저장
+        setProducts(Array.isArray(data) ? data : data.products || []);
+        if (data.summary) {
+          setSummary(data.summary);
+        }
+      } catch (error) {
+        console.error('제품 데이터 로드 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  // 탭 및 검색어로 제품 필터링 계산
+  const filteredProducts = products.filter((product) => {
+    // 카테고리 탭 필터링
+    const matchesTab = 
+      selectedTab === '전체' || 
+      product.category === selectedTab;
+
+    // 2검색어 필터링
+    const matchesSearch = 
+      product.product_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesTab && matchesSearch;
+  });
+
+  // 카테고리별 개수 동적 계산
+  const totalCount = products.length;
+  const groceryCount = products.filter(p => p.category === '식료품').length;
+  const necessityCount = products.filter(p => p.category === '생필품').length;
+
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm('정말 이 품목을 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteProduct(productId);
+      // 삭제 성공 시 상태(state)에서 해당 제품을 필터링하여 UI 즉시 반영
+      setProducts((prevProducts) => 
+        prevProducts.filter((product) => 
+          (product.product_id || product.id) !== productId)
+      );
+    } catch (error) {
+      alert('제품 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'HEALTHY': return { text: '여유', className: 'status-여유' };
+      case 'WARNING': return { text: '임박', className: 'status-임박' };
+      case 'DEPLETED': return { text: '소진', className: 'status-소진' };
+      case 'EXPIRED': return { text: '폐기', className: 'status-폐기' };
+      default: return { text: status, className: '' };
+    }
+  };
+
+  const handleDepleteProduct = async (productId) => {
+    if (!window.confirm('이 품목을 소진 처리하시겠습니까?')) return;
+
+    try {
+      // 오늘 날짜를 YYYY-MM-DD 형식으로 생성
+      const today = new Date().toISOString().split('T')[0];
+      
+      await depleteProduct(productId, today);
+      
+      // 성공 시 상태를 업데이트하여 화면의 상태나 목록을 즉시 갱신 (예: 상태를 '소진'으로 변경)
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          (product.product_id || product.id) === productId
+            ? { ...product, status: '소진' }
+            : product
+        )
+      );
+    } catch (error) {
+      alert('제품 소진 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  // dday 숫자를 받아 화면 표시용 문자열로 변환하는 함수
+  const formatDday = (dday) => {
+    if (dday === null || dday === undefined) return '';
+    
+    // 0인 경우는 정확히 "D-day"로 표시
+    if (dday === 0) {
+      return 'D-day';
+    }
+    
+    // 양수일 때 (예: 31 -> D-31)
+    if (dday > 0) {
+      return `D-${dday}`;
+    }
+    
+    // 음수일 때 (예: -3 -> D+3 또는 기한 경과 표현)
+    return `D+${Math.abs(dday)}`;
+  };
 
   return (
     <Layout>
@@ -82,7 +150,7 @@ export default function ProductsPage() {
               <div className="products-summary-card summary-expired">
                 <div className="products-summary-content">
                   <p>소비기한 지남</p>
-                  <h2>품목 1개</h2>
+                  <h2>품목 {summary.expired_count}개</h2>
                   <span>즉시 확인 필요</span>
                 </div>
                 <FontAwesomeIcon className="products-summary-icon" icon={faTrashCan} />
@@ -91,29 +159,35 @@ export default function ProductsPage() {
               <div className="products-summary-card summary-warning">
                 <div className="products-summary-content">
                   <p>소비기한 임박</p>
-                  <h2>품목 1개</h2>
+                  <h2>품목 {summary.warning_count}개</h2>
                   <span>소비 권장</span>
                 </div>
                 <FontAwesomeIcon className="products-summary-icon" icon={faTriangleExclamation} />
               </div>
 
-              <div className="products-summary-card summary-ai">
-                <div className="products-summary-content">
-                  <p>AI 소진 예측</p>
-                  <h2>키친타올</h2>
-                  <span>이웃과 공구 추천</span>
+              {/* AI 소진 예측 및 공구 추천 카드 */}
+              {summary.recommended_items && summary.recommended_items.length > 0 ? (
+                summary.recommended_items.slice(0,2).map((item) => (
+                  <div key={item.product_id} className="products-summary-card summary-ai">
+                    <div className="products-summary-content">
+                      <p>AI 소진 예측</p>
+                      <h2>{item.product_name}</h2>
+                      <span>이웃과 공구 추천</span>
+                    </div>
+                    <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
+                  </div>
+                ))
+              ) : (
+                /* 추천 품목이 없을 경우 대체 뷰 */
+                <div className="products-summary-card summary-ai">
+                  <div className="products-summary-content">
+                    <p>AI 소진 예측</p>
+                    <h2>없음</h2>
+                    <span>모든 품목 여유로움</span>
+                  </div>
+                  <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
                 </div>
-                <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
-              </div>
-
-              <div className="products-summary-card summary-ai">
-                <div className="products-summary-content">
-                  <p>AI 소진 예측</p>
-                  <h2>세제</h2>
-                  <span>이웃과 공구 추천</span>
-                </div>
-                <FontAwesomeIcon className="products-summary-icon" icon={faCartShopping} />
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -129,17 +203,28 @@ export default function ProductsPage() {
             {/* 카테고리 탭 및 품목 검색 */}
             <div className="products-controls">
               <div className="products-tabs">
-                <button type="button" className="products-tab products-tab-active">
-                  전체 (5)
+              <button 
+                type="button" 
+                className={`products-tab ${selectedTab === '전체' ? 'products-tab-active' : ''}`}
+                onClick={() => setSelectedTab('전체')}
+              >
+                전체 ({totalCount})
                 </button>
-                <button type="button" className="products-tab">
-                  식료품 (3)
+                <button 
+                  type="button" 
+                  className={`products-tab ${selectedTab === '식료품' ? 'products-tab-active' : ''}`}
+                  onClick={() => setSelectedTab('식료품')}
+                >
+                  식료품 ({groceryCount})
                 </button>
-                <button type="button" className="products-tab">
-                  생필품 (2)
+                <button 
+                  type="button" 
+                  className={`products-tab ${selectedTab === '생필품' ? 'products-tab-active' : ''}`}
+                  onClick={() => setSelectedTab('생필품')}
+                >
+                  생필품 ({necessityCount})
                 </button>
               </div>
-
               <div className="products-search-box">
                 <FontAwesomeIcon className="products-search-icon" icon={faMagnifyingGlass} />
                 <input
@@ -147,52 +232,82 @@ export default function ProductsPage() {
                   className="products-search"
                   placeholder="품목 검색"
                   aria-label="품목 검색"
-                  readOnly
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)} // 입력할 때마다 검색어 실시간 반영
                 />
               </div>
             </div>
 
             {/* 재고 품목 목록 테이블 */}
             <div className="products-list">
-              <table className="products-table">
-                <thead>
-                  <tr>
-                    <th>카테고리</th>
-                    <th>세부 카테고리</th>
-                    <th>상태</th>
-                    <th>상품명</th>
-                    <th>기간</th>
-                    <th></th>
-                  </tr>
-                </thead>
-
+              {loading ? (
+                <p className="products-loading">데이터를 불러오는 중입니다...</p>
+              ) : (
+                <table className="products-table">
+                  <thead>
+                    <tr>
+                      <th>카테고리</th>
+                      <th>세부 카테고리</th>
+                      <th>상태</th>
+                      <th>상품명</th>
+                      <th>기간</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  
                 <tbody>
-                  {products
-                    .slice()
-                    .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
-                    .map((product) => (
-                      <tr key={product.product_id}>
-                        <td>{product.category}</td>
-                        <td>{product.subcategory}</td>
-                        <td>
-                          <span className={`products-status status-${product.status}`}>
-                            {product.status}
-                          </span>
-                        </td>
-                        <td className="products-name">{product.product_name}</td>
-                        <td className="products-date">
-                          <span>{product.product_date.replaceAll('-', '.')}</span>
-                          <span>{product.dday}</span>
-                        </td>
-                        <td>
-                          <button type="button" className="products-delete" disabled>
-                            삭제
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                  {filteredProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="products-empty">검색된 품목이 없습니다.</td>
+                    </tr>
+                  ) : (
+                    filteredProducts
+                      .slice()
+                      .sort((a, b) => new Date(a.product_date) - new Date(b.product_date))
+                      .map((product) => (
+                        <tr key={product.product_id || product.id}>
+                          <td>{product.category}</td>
+                          <td>{product.subcategory}</td>
+                          <td>
+                            {(() => {
+                              const { text, className } = getStatusLabel(product.status);
+                              return (
+                                <span className={`products-status ${className}`}>
+                                  {text}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="products-name">{product.product_name}</td>
+                          <td className="products-date">
+                            <span>{product.product_date?.replaceAll('-', '.')}</span>
+                            <span>{formatDday(product.dday)}</span>
+                          </td>
+                          <td>
+                            <div className="products-action-buttons">
+                              <button 
+                                type="button" 
+                                className="products-deplet"
+                                onClick={() => handleDepleteProduct(product.product_id || product.id)}
+                              >                                  
+                                소진
+                              </button>
+                              <button 
+                                type="button" 
+                                className="products-delete"
+                                onClick={() => handleDeleteProduct(product.product_id || product.id)}
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                  )}
                 </tbody>
-              </table>
+
+                </table>
+              )}
             </div>
           </div>
         </section>

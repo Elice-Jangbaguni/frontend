@@ -192,7 +192,7 @@
 .products-table td:nth-child(3) { width: 11%; }
 .products-table th:nth-child(4),
 .products-table td:nth-child(4) { width: 22%; text-align: left; }
-.products-table th:nth-child(5),
+.products-table th:nth-child(5) { text-align: left ; padding-left: 140px; }
 .products-table td:nth-child(5) { width: 30%; }
 .products-table th:nth-child(6),
 .products-table td:nth-child(6) { width: 10%; text-align: center; }
@@ -273,8 +273,10 @@
 
 /* 소비기한 날짜 및 D-Day */
 .products-date {
+  text-align: left !important;
+  padding-left: 140px !important;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums; 
   letter-spacing: -0.02em;
 }
 
@@ -283,23 +285,44 @@
   font-weight: 600;
 }
 
-/* 삭제 버튼 */
-.products-delete {
-  padding: 6px 12px;
+.products-action-buttons{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.products-deplet {
+  padding: 6px 10px;
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #C1121F;
-  font-size: 15px;
+  color: #172A46;
+  font-size: 14px; 
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.products-delete:hover:not(:disabled) {
-  background-color: rgba(193, 18, 31, 0.08);
+/* 삭제 버튼 */
+.products-delete {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #C1121F;
+  font-size: 14px; 
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
+.products-deplet:hover:not(:disabled),
+.products-delete:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.products-deplet:disabled,
 .products-delete:disabled {
   opacity: 0.7;
   cursor: default;
@@ -422,12 +445,25 @@
   }
 }
 
+@media (max-width: 950px) {
+
+  .products-table th:nth-child(5) {text-align: left; padding-left: 85px;}
+
+  .products-date {
+    text-align: left !important;
+    padding-left: 85px !important;   
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1.3px;
+  }
+}
+
 @media (max-width: 768px) {
   .products-section {
     margin-bottom: 32px;
   }
 
-  /* 1. 재고 알림 카드: 모바일에서도 2열 그리드로 압축 */
+  /* 재고 알림 카드: 모바일에서도 2열 그리드로 압축 */
   .products-summary {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -459,7 +495,7 @@
     font-size: 22px;
   }
 
-  /* 2. 카테고리 탭 & 검색창 컴팩트화 */
+  /* 카테고리 탭 & 검색창 컴팩트화 */
   .products-controls {
     gap: 12px;
     margin-bottom: 14px;
@@ -487,7 +523,7 @@
     font-size: 14px;
   }
 
-  /* 3. 재고 목록 테이블: 모바일에서 '카테고리(1열)' 숨기고 '세부 카테고리 | 상태 | 상품명' 우선 노출 */
+  /* 재고 목록 테이블: 모바일에서 '카테고리(1열)' 숨기고 '세부 카테고리 | 상태 | 상품명' 우선 노출 */
   .products-list {
     padding: 4px 10px 8px;
   }
@@ -496,21 +532,21 @@
     min-width: 540px;
   }
 
-  .products-table th:nth-child(1),
-  .products-table td:nth-child(1) {
+  .products-table th:nth-child(2),
+  .products-table td:nth-child(2) {
     display: none;
   }
 
-  .products-table th:nth-child(2),
-  .products-table td:nth-child(2) { width: 22%; }
+  .products-table th:nth-child(1),
+  .products-table td:nth-child(1) { width: 16%; }
   .products-table th:nth-child(3),
   .products-table td:nth-child(3) { width: 16%; }
   .products-table th:nth-child(4),
   .products-table td:nth-child(4) { width: 26%; }
-  .products-table th:nth-child(5),
+  .products-table th:nth-child(5) {text-align: left; padding-left: 10px;}
   .products-table td:nth-child(5) { width: 24%; }
   .products-table th:nth-child(6),
-  .products-table td:nth-child(6) { width: 12%; }
+  .products-table td:nth-child(6) { width: 15%; text-align: center;}
 
   .products-table th {
     height: 38px;
@@ -531,12 +567,20 @@
     font-size: 12px;
   }
 
-  .products-delete {
+  .products-date {
+    text-align: left !important;
+    padding-left: 10px !important;   
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1.3px;
+  }
+
+  .products-deplet, .products-delete {
     padding: 4px 8px;
     font-size: 13px;
   }
 
-  /* 4. 하단 영수증 인식 플로팅 버튼 슬림화 */
+  /* 하단 영수증 인식 플로팅 버튼 슬림화 */
   .products-upload {
     bottom: 20px;
     gap: 8px;
