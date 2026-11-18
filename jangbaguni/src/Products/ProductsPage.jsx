@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrashCan,
@@ -11,7 +11,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
 import ReceiptOCRModal from './ReceiptOCRModal';
-import { fetchProducts, deleteProduct,depleteProduct } from '../API/products';
+import { fetchProducts, deleteProduct, depleteProduct } from '../API/products';
+import { uploadReceipt } from '../API/receipt';
 import './ProductsPage.css';
 
 export default function ProductsPage() {
@@ -25,9 +26,13 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);  
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+  const [ocrResultData, setOcrResultData] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('전체'); // '전체', '식료품', '생필품'
+
+  // 파일 선택을 위한 숨겨진 input 레퍼런스
+  const fileInputRef = useRef(null);
 
   // 컴포넌트 마운트 시 제품 데이터 불러오기
   useEffect(() => {
@@ -50,6 +55,35 @@ export default function ProductsPage() {
 
     loadProducts();
   }, []);
+
+  // "내 PC에서 파일 선택" 메뉴 클릭 시 실제 파일창 열기
+  const handleFileSelectClick = () => {
+    setUploadOpen(false);
+    fileInputRef.current?.click();
+  };
+
+  // 사용자가 파일을 선택했을 때 POST /api/receipts/upload API 호출
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      const response = await uploadReceipt(file);
+      
+      console.log('영수증 업로드 성공:', response);
+      
+      // 서버에서 받은 OCR 인식 결과를 저장하고 모달 열기
+      setOcrResultData(response);
+      setOcrModalOpen(true);
+    } catch (error) {
+      console.error('영수증 업로드 중 오류 발생:', error);
+      alert('영수증 업로드에 실패했습니다.');
+    } finally {
+      setLoading(false);
+      e.target.value = ''; // 같은 파일 다시 선택 가능하도록 초기화
+    }
+  };
 
   // 탭 및 검색어로 제품 필터링 계산
   const filteredProducts = products.filter((product) => {
@@ -137,6 +171,15 @@ export default function ProductsPage() {
 
   return (
     <Layout>
+      {/* 파일 업로드를 위한 숨겨진 input 태그 */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept="image/*,application/pdf"
+        onChange={handleFileChange}
+      />
+
       <main className="page-container products-page">
         {/* 재고 알림 헤더 */}
         <div className="page-section-header">
@@ -320,10 +363,7 @@ export default function ProductsPage() {
             <button
               type="button"
               className="products-upload-option"
-              onClick={() => {
-                setUploadOpen(false);
-                setOcrModalOpen(true);
-              }}
+              onClick={handleFileSelectClick} // 클릭 시 파일 탐색기 열기 연결
             >
               <span className="products-upload-folder">
                 <FontAwesomeIcon icon={faFolderOpen} />
@@ -348,9 +388,12 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      {/* 영수증 OCR 결과 모달 */}
+      {/* 영수증 OCR 결과 모달 (서버에서 받은 결과 데이터 전달) */}
       {ocrModalOpen && (
-        <ReceiptOCRModal onClose={() => setOcrModalOpen(false)} />
+        <ReceiptOCRModal 
+          initialData={ocrResultData} 
+          onClose={() => setOcrModalOpen(false)} 
+        />
       )}
     </Layout>
   );
