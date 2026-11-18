@@ -12,7 +12,7 @@ import {
 import Layout from '../Main/Layout';
 import ReceiptOCRModal from './ReceiptOCRModal';
 import { fetchProducts, deleteProduct, depleteProduct } from '../API/products';
-import { uploadReceipt } from '../API/receipt';
+import { uploadReceipt, getReceiptItems } from '../API/receipt';
 import './ProductsPage.css';
 
 export default function ProductsPage() {
@@ -62,26 +62,41 @@ export default function ProductsPage() {
     fileInputRef.current?.click();
   };
 
-  // 사용자가 파일을 선택했을 때 POST /api/receipts/upload API 호출
+// 사용자가 파일을 선택했을 때 업로드 후 아이템 조회 API 호출
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     try {
       setLoading(true);
-      const response = await uploadReceipt(file);
       
-      console.log('영수증 업로드 성공:', response);
+      // 1. 영수증 업로드 API 호출 (POST /api/receipts/upload)
+      const uploadResponse = await uploadReceipt(file);
+      console.log('영수증 업로드 성공 응답:', uploadResponse);
       
-      // 서버에서 받은 OCR 인식 결과를 저장하고 모달 열기
-      setOcrResultData(response);
+      // 2. 업로드 응답에서 receipt_id 추출 (예: uploadResponse.receipt_id)
+      const receiptId = uploadResponse.receipt_id;
+
+      if (receiptId) {
+        // 3. 영수증 아이템 조회 API 호출 (GET /api/receipts/{receipt_id}/items)[cite: 17]
+        const itemsResponse = await getReceiptItems(receiptId);
+        console.log('영수증 아이템 조회 성공:', itemsResponse);
+        
+        // 조회된 데이터를 모달 상태로 전달
+        setOcrResultData(itemsResponse);
+      } else {
+        // 만약 receipt_id가 바로 안오고 업로드 응답에 items가 포함된 경우 대안 처리
+        setOcrResultData(uploadResponse);
+      }
+      
+      // 4. 모달 열기
       setOcrModalOpen(true);
     } catch (error) {
-      console.error('영수증 업로드 중 오류 발생:', error);
-      alert('영수증 업로드에 실패했습니다.');
+      console.error('영수증 업로드 또는 아이템 조회 중 오류 발생:', error);
+      alert('영수증 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
-      e.target.value = ''; // 같은 파일 다시 선택 가능하도록 초기화
+      e.target.value = ''; // 파일 input 초기화
     }
   };
 

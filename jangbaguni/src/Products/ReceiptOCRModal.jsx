@@ -3,31 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCamera, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
 import './ReceiptOCRModal.css';
 
-// 영수증 OCR 결과 더미 데이터
-const sampleProducts = [
-  {
-    product_id: 1,
-    product_name: '매일우유 저지방 900ml',
-    category: '식료품',
-    product_date: '2026-11-20',
-    ocr_date: '2026-11-18',
-  },
-  {
-    product_id: 2,
-    product_name: '물티슈',
-    category: '생필품',
-    product_date: '2027-01-01',
-  },
-  {
-    product_id: 3,
-    product_name: '샴푸',
-    category: '생필품',
-    product_date: null,
-  },
-];
-
 // 임시 소비기한 기준 남은 일수 계산
 const getRemainingDays = (productDate) => {
+  if (!productDate) return null;
   const today = new Date();
   const [year, month, day] = productDate.split('-').map(Number);
   const targetDate = new Date(year, month - 1, day);
@@ -37,9 +15,18 @@ const getRemainingDays = (productDate) => {
   return Math.round(diff / (1000 * 60 * 60 * 24));
 };
 
-export default function ReceiptOCRModal({ onClose }) {
-  // 인식 품목 목록, 카메라 스캔 완료 목록, 안내 메시지 상태 관리
-  const [items, setItems] = useState(sampleProducts);
+export default function ReceiptOCRModal({ initialData, onClose }) {
+// 서버에서 받은 items 배열의 '마지막 항목'을 무조건 제외하고 상태 초기화
+  const [items, setItems] = useState(() => {
+    let rawItems = [];
+    if (!initialData) return [];
+    if (Array.isArray(initialData.items)) rawItems = initialData.items;
+    else if (Array.isArray(initialData)) rawItems = initialData;
+
+    // 마지막 항목(총구 매액 등)을 제외하고 반환
+    return rawItems.slice(0, -1);
+  });
+    
   const [scannedIds, setScannedIds] = useState([]);
   const [message, setMessage] = useState('');
 
@@ -49,9 +36,9 @@ export default function ReceiptOCRModal({ onClose }) {
   // 개별 품목 소비기한 OCR 테스트 반영
   const handleCameraClick = (productId) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.product_id === productId
-          ? { ...item, product_date: item.ocr_date }
+      prev.map((item, index) =>
+        (item.product_id || index) === productId
+          ? { ...item, product_date: item.ocr_date || item.product_date }
           : item
       )
     );
@@ -128,45 +115,46 @@ export default function ReceiptOCRModal({ onClose }) {
                 인식된 상품이 없습니다.
               </p>
             ) : (
-              items.map((item) => {
-                const isScanned = scannedIds.includes(item.product_id);
+              items.map((item, index) => {
+                const itemId = item.product_id || index;
+                const isScanned = scannedIds.includes(itemId);
                 const remainingDays = item.product_date
                   ? getRemainingDays(item.product_date)
                   : null;
 
                 let dateLabel;
                 if (item.category === '식료품') {
-                  if (isScanned) {
-                    dateLabel = item.product_date.replaceAll('-', '.');
+                  if (isScanned || item.product_date) {
+                    dateLabel = item.product_date ? item.product_date.replaceAll('-', '.') : '기한 미설정';
                   } else {
-                    dateLabel = `임시 ${remainingDays > 0 ? '+' : ''}${remainingDays}일`;
+                    dateLabel = `임시 ${remainingDays > 0 ? '+' : ''}${remainingDays || 0}일`;
                   }
                 } else {
                   if (remainingDays === null) {
-                    dateLabel = '예측 불가';
+                    dateLabel = item.product_date ? item.product_date.replaceAll('-', '.') : '예측 불가';
                   } else {
                     dateLabel = `예측 ${remainingDays > 0 ? '+' : ''}${remainingDays}일`;
                   }
                 }
 
                 return (
-                  <div className="receipt-ocr-item" key={item.product_id}>
+                  <div className="receipt-ocr-item" key={itemId}>
                     <div className="receipt-ocr-item-info">
                       <span className="receipt-ocr-product-name">
                         {item.product_name}
                       </span>
 
-                      {item.category === '식료품' && (
+                      {/* {item.category === '식료품' && ( */}
                         <button
                           type="button"
                           className="receipt-ocr-camera"
-                          onClick={() => handleCameraClick(item.product_id)}
+                          onClick={() => handleCameraClick(itemId)}
                           aria-label={`${item.product_name} 소비기한 인식`}
                           title="소비기한 OCR 테스트"
                         >
                           <FontAwesomeIcon icon={faCamera} />
                         </button>
-                      )}
+                      {/* )} */}
                     </div>
                     <span className="receipt-ocr-date">{dateLabel}</span>
                   </div>
