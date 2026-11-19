@@ -1,68 +1,172 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { getMyGroupBuyList } from '../API/groupbuy';
 import './ChatModal.css';
 
+// 날짜 값을 YYYY-MM-DD 형식으로 정규화
+const formatDateOnly = (value) => {
+  if (!value) return '';
+  const str = String(value).trim();
+  const match = str.match(/^\d{4}-\d{2}-\d{2}/);
+  if (match) return match[0];
 
-// 채팅방 목록 더미 데이터
-const INITIAL_CHAT_ROOMS = [
-  {
-    id: 1,
-    productTitle: '코스트코 키친타올 12롤',
-    partnerName: '성북구자취생',
-    lastMessage: '네! 내일 저녁 7시에 성북구청 앞에서 뵐게요 😊',
-    updatedAt: '오후 4:32',
-    unreadCount: 2,
-    status: '모집중',
-  },
-  {
-    id: 2,
-    productTitle: '신라면 멀티팩 20봉',
-    partnerName: '라면러버',
-    lastMessage: '혹시 아직 자리 남았나요?',
-    updatedAt: '어제',
-    unreadCount: 0,
-    status: '모집완료',
-  },
-  {
-    id: 3,
-    productTitle: '물티슈 캡형 10팩',
-    partnerName: '깔끔대장',
-    lastMessage: '입금 확인했습니다! 내일 뵙겠습니다.',
-    updatedAt: '11월 10일',
-    unreadCount: 0,
-    status: '거래완료',
-  },
-];
+  const parsed = new Date(str);
+  if (Number.isNaN(parsed.getTime())) return str.slice(0, 10);
 
-// 채팅방별 메시지 더미 데이터
-const INITIAL_MESSAGES = {
-  1: [
-    { id: 101, sender: 'me', text: '안녕하세요! 키친타올 공구 참여하고 싶어서 연락드렸어요.', time: '오후 4:20' },
-    { id: 102, sender: 'partner', text: '안녕하세요~ 네 가능해요! 6롤씩 나누면 8,500원입니다.', time: '오후 4:25' },
-    { id: 103, sender: 'me', text: '좋아요! 내일 저녁 7시쯤 직거래 가능하실까요?', time: '오후 4:30' },
-    { id: 104, sender: 'partner', text: '네! 내일 저녁 7시에 성북구청 앞에서 뵐게요 😊', time: '오후 4:32' },
-  ],
-  2: [
-    { id: 201, sender: 'partner', text: '혹시 아직 자리 남았나요?', time: '오후 2:10' },
-  ],
-  3: [
-    { id: 301, sender: 'partner', text: '입금 확인했습니다! 내일 뵙겠습니다.', time: '오전 11:05' },
-  ],
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// 방 인덱스별 임시 메시지 생성
+const buildSeedMessagesForRooms = (rooms) => {
+  const nextMessages = {};
+
+  if (rooms[0]) {
+    nextMessages[rooms[0].id] = [
+      {
+        id: `${rooms[0].id}-seed-1`,
+        sender: 'me',
+        text: '안녕하세요 공구 원합니다!',
+        time: '오후 3:10',
+      },
+    ];
+  }
+
+  if (rooms[1]) {
+    nextMessages[rooms[1].id] = [
+      {
+        id: `${rooms[1].id}-seed-1`,
+        sender: 'me',
+        text: '안녕하세요 공구 원합니다!',
+        time: '오후 2:05',
+      },
+      {
+        id: `${rooms[1].id}-seed-2`,
+        sender: 'partner',
+        text: '네 가능합니다',
+        time: '오후 2:12',
+      },
+    ];
+  }
+
+  return nextMessages;
+};
+
+// API 응답 항목을 채팅방 목록 형태로 정규화
+const normalizeGroupBuyToRoom = (item, index = 0) => {
+  const roomId = item.buy_id ?? item.id;
+  const productTitle = item.product_name ?? item.title ?? `공구 #${roomId}`;
+  const partnerName =
+    item.partner_name ??
+    item.seller_name ??
+    item.writer_name ??
+    item.nickname ??
+    item.username ??
+    item.place ??
+    '참여자';
+
+  const currentPeople = Number(item.current_people ?? item.participants_count ?? 0);
+  const maxPeople = Number(item.number_of_people ?? item.max_people ?? 0);
+  const rawStatus = item.status;
+
+  let statusLabel = '모집중';
+  if (rawStatus === '거래완료' || rawStatus === 'COMPLETED') {
+    statusLabel = '거래완료';
+  } else if (
+    rawStatus === '모집완료' ||
+    rawStatus === 'CLOSED' ||
+    (maxPeople > 0 && currentPeople >= maxPeople)
+  ) {
+    statusLabel = '모집완료';
+  }
+
+  const rawDate =
+    item.updated_at ?? item.updatedAt ?? item.uploaded_date ?? item.created_at ?? '';
+
+  let seedLastMessage = item.last_message ?? item.lastMessage ?? '';
+  if (!seedLastMessage) {
+    if (index === 0) seedLastMessage = '안녕하세요 공구 원합니다!';
+    else if (index === 1) seedLastMessage = '네 가능합니다';
+  }
+
+  return {
+    id: roomId,
+    buyId: roomId,
+    productTitle,
+    partnerName,
+    lastMessage: seedLastMessage,
+    updatedAt: formatDateOnly(rawDate),
+    unreadCount: Number(item.unread_count ?? item.unreadCount ?? 0),
+    status: statusLabel,
+  };
 };
 
 export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
-  // 선택된 채팅방 및 메시지 입력 상태 관리
-  const [selectedRoom, setSelectedRoom] = useState(initialRoom);
-  const [chatRooms, setChatRooms] = useState(INITIAL_CHAT_ROOMS);
-  const [messagesMap, setMessagesMap] = useState(INITIAL_MESSAGES);
+  const [selectedRoom, setSelectedRoom] = useState(
+    initialRoom ? normalizeGroupBuyToRoom(initialRoom) : null
+  );
+  const [chatRooms, setChatRooms] = useState([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [roomsError, setRoomsError] = useState('');
+  const [messagesMap, setMessagesMap] = useState({});
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
 
   // 초기 진입 채팅방 동기화
   useEffect(() => {
-    setSelectedRoom(initialRoom);
+    setSelectedRoom(initialRoom ? normalizeGroupBuyToRoom(initialRoom) : null);
   }, [initialRoom, isOpen]);
+
+  // 채팅 모달 열릴 때 내 참여 공구 목록 조회
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+
+    const loadMyRooms = async () => {
+      try {
+        setLoadingRooms(true);
+        setRoomsError('');
+
+        const data = await getMyGroupBuyList();
+        const rawList = Array.isArray(data)
+          ? data
+          : data?.posts || data?.items || data?.group_buys || data?.participants || data?.rooms || [];
+
+        const normalizedRooms = rawList.map((item, index) =>
+          normalizeGroupBuyToRoom(item, index)
+        );
+        const seedMessages = buildSeedMessagesForRooms(normalizedRooms);
+
+        if (isMounted) {
+          setChatRooms(normalizedRooms);
+          setMessagesMap((prev) => ({
+            ...seedMessages,
+            ...prev,
+          }));
+        }
+      } catch (error) {
+        console.error('내 참여 공구 목록 조회 실패:', error.response?.data || error);
+        if (isMounted) {
+          setRoomsError('참여 중인 공구 목록을 불러오지 못했습니다.');
+          setChatRooms([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingRooms(false);
+        }
+      }
+    };
+
+    loadMyRooms();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
 
   // 새 메시지 수신 시 스크롤 하단 고정
   useEffect(() => {
@@ -96,6 +200,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
       hour: '2-digit',
       minute: '2-digit',
     });
+    const todayDateString = formatDateOnly(now.toISOString());
 
     const newMessage = {
       id: Date.now(),
@@ -112,7 +217,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
     setChatRooms((prev) =>
       prev.map((room) =>
         room.id === selectedRoom.id
-          ? { ...room, lastMessage: inputText.trim(), updatedAt: timeString }
+          ? { ...room, lastMessage: inputText.trim(), updatedAt: todayDateString }
           : room
       )
     );
@@ -159,14 +264,20 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
         {/* 채팅방 목록 뷰 */}
         {!selectedRoom ? (
           <div className="chat-room-list">
-            {/* 비어 있는 경우 */}
-            {chatRooms.length === 0 ? (
+            {loadingRooms ? (
+              <div className="chat-empty-state">
+                <p>참여 중인 공구 목록을 불러오는 중입니다...</p>
+              </div>
+            ) : roomsError ? (
+              <div className="chat-empty-state">
+                <p>{roomsError}</p>
+              </div>
+            ) : chatRooms.length === 0 ? (
               <div className="chat-empty-state">
                 <p>진행 중인 공구 채팅이 없어요 🛒</p>
                 <span>관심 있는 공동구매에 참여해 대화를 시작해보세요!</span>
               </div>
             ) : (
-              // 채팅방 정보
               chatRooms.map((room) => (
                 <div
                   key={room.id}
@@ -174,7 +285,7 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
                   onClick={() => handleSelectRoom(room)}
                 >
                   <div className="chat-avatar">
-                    {room.partnerName.slice(0, 1)}
+                    {(room.partnerName || '공').slice(0, 1)}
                   </div>
                   <div className="chat-room-content">
                     <div className="chat-room-top">
@@ -182,11 +293,15 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
                       <span className={`chat-status-badge ${room.status === '모집중' ? 'active' : 'done'}`}>
                         {room.status}
                       </span>
-                      <span className="chat-room-time">{room.updatedAt}</span>
+                      {room.updatedAt && (
+                        <span className="chat-room-time">{room.updatedAt}</span>
+                      )}
                     </div>
                     <div className="chat-room-product">{room.partnerName}</div>
                     <div className="chat-room-bottom">
-                      <p className="chat-room-last-msg">{room.lastMessage}</p>
+                      {room.lastMessage && (
+                        <p className="chat-room-last-msg">{room.lastMessage}</p>
+                      )}
                       {room.unreadCount > 0 && (
                         <span className="chat-unread-badge">{room.unreadCount}</span>
                       )}
