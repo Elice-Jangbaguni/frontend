@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCamera, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
 import { scanProductDate } from '../API/receipt';
+import { registerProducts } from '../API/products';
 import './ReceiptOCRModal.css';
 
 // 임시 소비기한 기준 남은 일수 계산
@@ -20,8 +21,8 @@ const isFoodCategory = (category) => category === '식료품' || category === 'f
 
 const isDailyCategory = (category) => category === '생필품' || category === 'daily';
 
-export default function ReceiptOCRModal({ initialData, onClose }) {
-  // 서버에서 받은 items 배열의 '마지막 항목'을 제외하고 상태 초기화
+export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuccess }) {
+  // 서버에서 받은 items 배열로 상태 초기화
   const [items, setItems] = useState(() => {
     let rawItems = [];
     if (!initialData) return [];
@@ -34,12 +35,16 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
   const [scannedIds, setScannedIds] = useState([]);
   const [message, setMessage] = useState('');
   const [uploadingId, setUploadingId] = useState(null);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const fileInputRef = useRef(null);
   const targetProductIdRef = useRef(null);
 
   const foodCount = items.filter((item) => isFoodCategory(item.category)).length;
   const dailyCount = items.filter((item) => isDailyCategory(item.category)).length;
+
+  const getItemKey = (item, index) =>
+    item.ocritem_id ?? item.ocr_item_id ?? item.product_id ?? item.id ?? index;
 
   // 1. 카메라 버튼 클릭 시: 대상 상품 ID 저장 후 숨겨진 file input 오픈
   const handleCameraClick = (e, itemId) => {
@@ -48,7 +53,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
     fileInputRef.current?.click();
   };
 
-  // 2. 사진 선택 시: POST /api/products/product_date_ocr 호출하여 소비기한 OCR 수행
+  // 2. 사진 선택 시: POST /api/products/product_date_ocr API 호출하여 소비기한 OCR 수행
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     const targetId = targetProductIdRef.current;
@@ -69,7 +74,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
       if (detectedDate) {
         setItems((prev) =>
           prev.map((item, index) => {
-            const itemId = item.product_id ?? item.id ?? index;
+            const itemId = getItemKey(item, index);
             return itemId === targetId ? { ...item, product_date: detectedDate } : item;
           })
         );
@@ -89,16 +94,53 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
     }
   };
 
-  // 인식 품목 등록 핸들러
-  const handleRegister = () => {
-    const registerData = items.map((item) => ({
-      product_name: item.product_name,
-      category: item.category,
-      product_date: item.product_date,
-    }));
+  // 인식 품목 일괄 등록 핸들러 (POST /api/products)
+  const handleRegister = async () => {
+    if (isRegistering) return;
 
-    console.log('등록할 상품:', registerData);
-    setMessage('등록되었습니다.');
+    const resolvedReceiptId = Number(
+      receiptId ?? initialData?.receipt_id ?? items[0]?.receipt_id ?? 0
+    );
+
+    const payload = {
+      receipt_id: resolvedReceiptId,
+      products: items.map((item, index) => {
+        const itemId = getItemKey(item, index);
+        const isScanned = scannedIds.includes(itemId);
+
+        // 식료품: OCR 실행 시 인식된 날짜 전달, 미실행 시 null 전달
+        // 생필품: 백엔드에 저장된 AI 예측 날짜 그대로 전달
+        const productDate = isFoodCategory(item.category)
+          ? (isScanned ? (item.product_date ?? null) : null)
+          : (item.product_date ?? null);
+
+        return {
+          ocritem_id: Number(item.ocritem_id ?? item.ocr_item_id ?? item.id ?? 0),
+          product_name: item.product_name ?? '',
+          category: item.category ?? '',
+          subcategory: item.subcategory ?? '',
+          product_date: productDate,
+          total_amount: Number(item.total_amount ?? item.amount ?? item.quantity ?? 1),
+          unit: item.unit ?? '개',
+        };
+      }),
+    };
+
+    try {
+      setIsRegistering(true);
+      setMessage('상품을 등록하는 중입니다...');
+      console.log('등록 요청 payload:', payload);
+
+      await registerProducts(payload);
+      await onSuccess?.();
+      onClose();
+    } catch (error) {
+      console.error('상품 등록 실패:', error);
+      alert('상품 등록 중 오류가 발생했습니다.');
+      setMessage('');
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const hasScanned = scannedIds.length > 0;
@@ -107,7 +149,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
     <div
       className="modal-backdrop"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && !isRegistering) {
           onClose();
         }
       }}
@@ -139,6 +181,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
             type="button"
             className="modal-close-btn"
             onClick={onClose}
+            disabled={isRegistering}
             aria-label="닫기"
           >
             <FontAwesomeIcon icon={faXmark} />
@@ -171,7 +214,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
               </p>
             ) : (
               items.map((item, index) => {
-                const itemId = item.product_id ?? item.id ?? index;
+                const itemId = getItemKey(item, index);
                 const isScanned = scannedIds.includes(itemId);
                 const isUploading = uploadingId === itemId;
                 const remainingDays = item.product_date
@@ -209,7 +252,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
                           type="button"
                           className="receipt-ocr-camera"
                           onClick={(e) => handleCameraClick(e, itemId)}
-                          disabled={isUploading}
+                          disabled={isUploading || isRegistering}
                           aria-label={`${item.product_name} 소비기한 인식`}
                           title="소비기한 촬영 인식"
                         >
@@ -226,7 +269,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
             )}
           </div>
 
-          {/* 등록 완료 안내 메시지 */}
+          {/* 등록 안내 메시지 */}
           {message && (
             <p className="receipt-ocr-message" role="status">
               {message}
@@ -240,9 +283,9 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
             type="button"
             className="modal-confirm-btn"
             onClick={handleRegister}
-            disabled={items.length === 0}
+            disabled={items.length === 0 || isRegistering}
           >
-            {hasScanned ? '등록하기' : '네, 임시 기한 적용'}
+            {isRegistering ? '등록 중...' : hasScanned ? '등록하기' : '네, 임시 기한 적용'}
           </button>
         </div>
       </div>

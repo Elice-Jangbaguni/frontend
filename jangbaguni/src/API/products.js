@@ -11,6 +11,16 @@ export const fetchProducts = async () => {
   }
 };
 
+export const registerProducts = async (payload) => {
+  try {
+    const response = await apiClient.post('/products', payload);
+    return response.data;
+  } catch (error) {
+    console.error('상품 일괄 등록 실패:', error.response?.data || error);
+    throw error;
+  }
+};
+
 export const deleteProduct = async (productId) => {
   try {
     const response = await apiClient.delete(`/api/products/${productId}`);

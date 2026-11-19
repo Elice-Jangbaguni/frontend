@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrashCan,
@@ -23,34 +23,36 @@ export default function ProductsPage() {
     recommended_items: [],
   });
   const [loading, setLoading] = useState(true);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
   const [ocrResultData, setOcrResultData] = useState(null);
+  const [currentReceiptId, setCurrentReceiptId] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('전체');
 
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProducts();
+  const loadProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetchProducts();
 
-        setProducts(Array.isArray(data) ? data : data.products || []);
-        if (data.summary) {
-          setSummary(data.summary);
-        }
-      } catch (error) {
-        console.error('제품 데이터 로드 실패:', error);
-      } finally {
-        setLoading(false);
+      setProducts(Array.isArray(data) ? data : data.products || []);
+      if (data.summary) {
+        setSummary(data.summary);
       }
-    };
-
-    loadProducts();
+    } catch (error) {
+      console.error('제품 데이터 로드 실패:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const handleFileSelectClick = () => {
     setUploadOpen(false);
@@ -62,12 +64,13 @@ export default function ProductsPage() {
     if (!file) return;
 
     try {
-      setLoading(true);
+      setUploadingReceipt(true);
 
       const uploadResponse = await uploadReceipt(file);
       console.log('영수증 업로드 성공 응답:', uploadResponse);
 
-      const receiptId = uploadResponse.receipt_id;
+      const receiptId = uploadResponse.receipt_id ?? null;
+      setCurrentReceiptId(receiptId);
 
       if (receiptId) {
         const itemsResponse = await getReceiptItems(receiptId);
@@ -82,7 +85,7 @@ export default function ProductsPage() {
       console.error('영수증 업로드 또는 아이템 조회 중 오류 발생:', error);
       alert('영수증 처리 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setUploadingReceipt(false);
       e.target.value = '';
     }
   };
@@ -340,6 +343,7 @@ export default function ProductsPage() {
               type="button"
               className="products-upload-option"
               onClick={handleFileSelectClick}
+              disabled={uploadingReceipt}
             >
               <span className="products-upload-folder">
                 <FontAwesomeIcon icon={faFolderOpen} />
@@ -347,7 +351,9 @@ export default function ProductsPage() {
 
               <span className="products-upload-text">
                 <strong>내 PC에서 파일 선택</strong>
-                <small>영수증 이미지/PDF 파일 업로드</small>
+                <small>
+                  {uploadingReceipt ? '영수증 인식 중...' : '영수증 이미지/PDF 파일 업로드'}
+                </small>
               </span>
             </button>
           </div>
@@ -357,9 +363,10 @@ export default function ProductsPage() {
           type="button"
           className="products-upload-button"
           aria-expanded={uploadOpen}
+          disabled={uploadingReceipt}
           onClick={() => setUploadOpen(!uploadOpen)}
         >
-          <span>영수증 인식</span>
+          <span>{uploadingReceipt ? '인식 중...' : '영수증 인식'}</span>
           <FontAwesomeIcon icon={uploadOpen ? faChevronUp : faChevronDown} />
         </button>
       </div>
@@ -367,7 +374,9 @@ export default function ProductsPage() {
       {ocrModalOpen && (
         <ReceiptOCRModal
           initialData={ocrResultData}
+          receiptId={currentReceiptId}
           onClose={() => setOcrModalOpen(false)}
+          onSuccess={loadProducts}
         />
       )}
     </Layout>
