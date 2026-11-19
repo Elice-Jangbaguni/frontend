@@ -28,7 +28,7 @@ export default function ReceiptOCRModal({ initialData, onClose }) {
     if (Array.isArray(initialData.items)) rawItems = initialData.items;
     else if (Array.isArray(initialData)) rawItems = initialData;
 
-    return rawItems.slice(0, -1);
+    return rawItems;
   });
 
   const [scannedIds, setScannedIds] = useState([]);
