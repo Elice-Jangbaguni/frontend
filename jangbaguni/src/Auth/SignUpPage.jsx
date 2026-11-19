@@ -352,7 +352,7 @@ export default function SignupPage() {
             className="auth-primary-btn signup-submit-btn"
             disabled={isLoading}
           >
-            가입완료
+            {isLoading ? '회원가입 중...' : '가입완료'}
           </button>
         </form>
       </section>

@@ -100,7 +100,7 @@ export default function LoginPage() {
             className="auth-primary-btn login-submit-btn"
             disabled={isLoading}
           >
-            로그인
+            {isLoading ? '로그인 중...' : '로그인'}
           </button>
           <button
             type="button"
