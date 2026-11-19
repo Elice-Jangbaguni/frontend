@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCamera, faTrash } from '@fortawesome/free-solid-svg-icons';
+import AlertModal from '../Main/AlertModal';
 import './CreateGroupBuyModal.css';
 
 const INITIAL_FORM_DATA = {
@@ -13,15 +14,12 @@ const INITIAL_FORM_DATA = {
 };
 
 export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmitting = false }) {
-  // 공구 작성 입력 폼 데이터 상태 관리
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
-
-  // 첨부 이미지 파일 및 미리보기 URL 상태
   const [productImage, setProductImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
   const fileInputRef = useRef(null);
 
-  // 입력 폼 및 첨부 이미지 상태 초기화
   const resetForm = useCallback(() => {
     setFormData(INITIAL_FORM_DATA);
     setProductImage(null);
@@ -31,7 +29,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     }
   }, []);
 
-  // 선택된 이미지 파일의 미리보기 URL 생성 및 해제
   useEffect(() => {
     if (!productImage) {
       setPreviewUrl('');
@@ -46,14 +43,12 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     };
   }, [productImage]);
 
-  // 모달이 닫힐 때 입력값 초기화
   useEffect(() => {
     if (!isOpen) {
       resetForm();
     }
   }, [isOpen, resetForm]);
 
-  // 숫자 추출 후 천 단위 콤마 및 '원' 부착 헬퍼
   const handlePriceChange = (e) => {
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     const formattedValue = numericValue
@@ -75,7 +70,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     }
   };
 
-  // 일반 텍스트 입력 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -84,7 +78,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     }));
   };
 
-  // 모집 인원 숫자만 입력 처리
   const handleCapacityChange = (e) => {
     const numericValue = e.target.value.replace(/[^0-9]/g, '');
     setFormData((prev) => ({
@@ -93,13 +86,12 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     }));
   };
 
-  // 이미지 파일 첨부 핸들러
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 첨부할 수 있습니다.');
+      setAlertMessage('이미지 파일만 첨부할 수 있습니다.');
       e.target.value = '';
       return;
     }
@@ -107,7 +99,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     setProductImage(file);
   };
 
-  // 첨부 이미지 제거 핸들러
   const handleRemoveImage = () => {
     setProductImage(null);
     setPreviewUrl('');
@@ -116,7 +107,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     }
   };
 
-  // 공동구매 생성 API(POST /api/group_buy) 전송용 payload 구성 후 상위 핸들러 호출
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -124,19 +114,19 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
     const numericCapacity = Number(formData.number_of_people.replace(/[^0-9]/g, ''));
 
     if (!formData.product_name.trim()) {
-      alert('제품명을 입력해주세요.');
+      setAlertMessage('제품명을 입력해주세요.');
       return;
     }
     if (!numericPrice) {
-      alert('1인당 부담금을 입력해주세요.');
+      setAlertMessage('1인당 부담금을 입력해주세요.');
       return;
     }
     if (!formData.place.trim()) {
-      alert('픽업 장소를 입력해주세요.');
+      setAlertMessage('픽업 장소를 입력해주세요.');
       return;
     }
     if (numericCapacity < 2) {
-      alert('모집 인원은 최소 2명 이상이어야 합니다.');
+      setAlertMessage('모집 인원은 최소 2명 이상이어야 합니다.');
       return;
     }
 
@@ -159,7 +149,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
   return (
     <div className="modal-backdrop" onClick={handleClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        {/* 상단 헤더 */}
         <div className="modal-header">
           <h3>공구 작성</h3>
           <button type="button" className="modal-close-btn" onClick={handleClose} aria-label="닫기">
@@ -167,9 +156,7 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
           </button>
         </div>
 
-        {/* 스크롤 가능한 폼 본문 */}
         <form id="create-groupbuy-form" className="modal-body" onSubmit={handleSubmit}>
-          {/* 동네 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label className="form-label">동네</label>
@@ -179,7 +166,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             </div>
           </div>
 
-          {/* 제품 이미지 첨부 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="product_image" className="form-label">제품 사진</label>
@@ -223,7 +209,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             </div>
           </div>
 
-          {/* 제품명 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="product_name" className="form-label">제품명</label>
@@ -239,7 +224,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             />
           </div>
 
-          {/* 1인당 부담금 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="price" className="form-label">1인당 부담금</label>
@@ -267,7 +251,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             />
           </div>
 
-          {/* 픽업 장소 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="place" className="form-label">픽업 장소</label>
@@ -286,7 +269,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             />
           </div>
 
-          {/* 모집 인원 (명) */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="number_of_people" className="form-label">모집 인원 (명)</label>
@@ -303,7 +285,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
             />
           </div>
 
-          {/* 설명 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="description" className="form-label">설명</label>
@@ -319,7 +300,6 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
           </div>
         </form>
 
-        {/* 하단 푸터 */}
         <div className="modal-footer">
           <button
             type="submit"
@@ -331,6 +311,12 @@ export default function CreateGroupBuyModal({ isOpen, onClose, onSubmit, isSubmi
           </button>
         </div>
       </div>
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
+      />
     </div>
   );
 }

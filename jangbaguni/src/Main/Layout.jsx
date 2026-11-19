@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBasketShopping } from '@fortawesome/free-solid-svg-icons';
 import { logoutUser } from '../API/auth';
+import AlertModal from './AlertModal';
 import './MainPage.css';
 
 export default function Layout({ children, showFooter = true }) {
-
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,6 +19,8 @@ export default function Layout({ children, showFooter = true }) {
   // localStorage 기반 로그인 상태
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const userName = localStorage.getItem('userName') || '회원';
+
+  const [logoutAlertOpen, setLogoutAlertOpen] = useState(false);
 
   // 메인 이동
   const handleGoToMain = () => {
@@ -55,14 +57,17 @@ export default function Layout({ children, showFooter = true }) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('userName');
-      alert('로그아웃되었습니다.');
-      navigate('/');
+      setLogoutAlertOpen(true);
     }
+  };
+
+  const handleConfirmLogout = () => {
+    setLogoutAlertOpen(false);
+    navigate('/');
   };
 
   return (
     <div className="main-wrapper">
-      
       {/* 헤더 */}
       <header className="main-header">
         <div className="header-inner">
@@ -97,7 +102,7 @@ export default function Layout({ children, showFooter = true }) {
               </>
             ) : (
               <>
-              {/* 로그인 X - 로그인, 회원가입 */}
+                {/* 로그인 X - 로그인, 회원가입 */}
                 <div className={`auth-text ${isLoginPage ? 'active' : ''}`} onClick={handleGoToLogin}>로그인</div>
                 <div className={`auth-text ${isSignupPage ? 'active' : ''}`} onClick={handleGoToTerms}>회원 가입</div>
               </>
@@ -119,7 +124,7 @@ export default function Layout({ children, showFooter = true }) {
               장바구니 : 영수증 OCR & AI 소비주기 예측 기반 1인 가구 식료품/생필품 관리 웹 서비스
             </p>
             <p className="footer-team">Developed by Team 장바구니 (Frontend & Backend)</p>
-            
+
             <div className="footer-members">
               <p>
                 Frontend : 이승민{' '}
@@ -147,6 +152,11 @@ export default function Layout({ children, showFooter = true }) {
         </footer>
       )}
 
+      <AlertModal
+        open={logoutAlertOpen}
+        message="로그아웃되었습니다."
+        onConfirm={handleConfirmLogout}
+      />
     </div>
   );
 }

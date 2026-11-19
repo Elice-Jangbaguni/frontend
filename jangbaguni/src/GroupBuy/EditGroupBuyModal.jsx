@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import AlertModal from '../Main/AlertModal';
 import './CreateGroupBuyModal.css';
 
 export default function EditGroupBuyModal({
@@ -18,13 +19,13 @@ export default function EditGroupBuyModal({
     capacity: '',
     description: '',
   });
+  const [alertMessage, setAlertMessage] = useState('');
 
   const formatPrice = (value) => {
     const numericValue = String(value ?? '').replace(/[^0-9]/g, '');
     return numericValue ? `${Number(numericValue).toLocaleString('ko-KR')}원` : '';
   };
 
-  // 수정 버튼 클릭 시 기존 폼 내용 채우기
   useEffect(() => {
     if (isOpen && initialData) {
       const parsedCapacity = initialData.badge
@@ -67,7 +68,6 @@ export default function EditGroupBuyModal({
     }));
   };
 
-  // 공동구매 수정 API(PUT /api/group_buy/{buy_id}) 전송용 payload 구성 후 상위 핸들러 호출
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -75,19 +75,19 @@ export default function EditGroupBuyModal({
     const numericCapacity = Number(String(formData.capacity).replace(/[^0-9]/g, ''));
 
     if (!formData.title.trim()) {
-      alert('제품명을 입력해주세요.');
+      setAlertMessage('제품명을 입력해주세요.');
       return;
     }
     if (!numericPrice) {
-      alert('1인당 부담금을 입력해주세요.');
+      setAlertMessage('1인당 부담금을 입력해주세요.');
       return;
     }
     if (!formData.location.trim()) {
-      alert('픽업 장소를 입력해주세요.');
+      setAlertMessage('픽업 장소를 입력해주세요.');
       return;
     }
     if (numericCapacity < 2) {
-      alert('모집 인원은 최소 2명 이상이어야 합니다.');
+      setAlertMessage('모집 인원은 최소 2명 이상이어야 합니다.');
       return;
     }
 
@@ -116,7 +116,6 @@ export default function EditGroupBuyModal({
         </div>
 
         <form id="edit-groupbuy-form" className="modal-body" onSubmit={handleSubmit}>
-          {/* 동네 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label className="form-label">동네</label>
@@ -126,7 +125,6 @@ export default function EditGroupBuyModal({
             </div>
           </div>
 
-          {/* 제품명 (수정 불가) */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="edit-title" className="form-label">제품명</label>
@@ -144,7 +142,6 @@ export default function EditGroupBuyModal({
             />
           </div>
 
-          {/* 1인당 부담금 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="edit-price" className="form-label">1인당 부담금</label>
@@ -172,7 +169,6 @@ export default function EditGroupBuyModal({
             />
           </div>
 
-          {/* 픽업 장소 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="edit-location" className="form-label">픽업 장소</label>
@@ -188,7 +184,6 @@ export default function EditGroupBuyModal({
             />
           </div>
 
-          {/* 모집 인원 (명) */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="edit-capacity" className="form-label">모집 인원 (명)</label>
@@ -205,7 +200,6 @@ export default function EditGroupBuyModal({
             />
           </div>
 
-          {/* 설명 */}
           <div className="form-group">
             <div className="label-wrapper">
               <label htmlFor="edit-description" className="form-label">설명</label>
@@ -232,6 +226,12 @@ export default function EditGroupBuyModal({
           </button>
         </div>
       </div>
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
+      />
     </div>
   );
 }

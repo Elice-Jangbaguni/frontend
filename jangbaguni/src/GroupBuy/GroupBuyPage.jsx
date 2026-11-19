@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
+import AlertModal from '../Main/AlertModal';
 import CreateGroupBuyModal from './CreateGroupBuyModal';
 import ChatFloatingButton from '../Chat/ChatFloatingButton';
 import ChatModal from '../Chat/ChatModal';
@@ -19,7 +20,6 @@ const BACKEND_BASE_URL =
 const FALLBACK_IMAGE =
   'https://thumbnail.coupangcdn.com/thumbnails/remote/640x640ex/image/vendor_inventory/8510/5e1707958f1f47428c08acae84c9999c567455ffb11d7020f8887705d223.jpg';
 
-// 백엔드 상대 경로 이미지 URL을 전체 경로로 변환
 const getImageUrl = (imagePath) => {
   if (!imagePath) return FALLBACK_IMAGE;
   if (imagePath.startsWith('http')) return imagePath;
@@ -39,7 +39,6 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
-// 목록 API 응답({ group_buy: [...] } 또는 배열)에서 게시글 배열 추출
 const extractPosts = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.group_buy)) return data.group_buy;
@@ -60,8 +59,8 @@ export default function GroupBuyPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
-  // 지역별 공동구매 목록 API 조회 (GET /api/group_buy)
   const fetchGroupBuyList = useCallback(async (targetRegion) => {
     setIsLoading(true);
     try {
@@ -79,7 +78,6 @@ export default function GroupBuyPage() {
     }
   }, []);
 
-  // 내 참여 공동구매 목록 API 조회 (GET /api/group_buy/participants)
   const fetchMyGroupBuyList = useCallback(async () => {
     setIsMyLoading(true);
     try {
@@ -112,14 +110,13 @@ export default function GroupBuyPage() {
     });
   };
 
-  // 공동구매 생성 API 요청 및 목록 갱신 (POST /api/group_buy)
   const handleCreateGroupBuy = async (payload) => {
     setIsSubmitting(true);
     try {
       const data = await createGroupBuy(payload);
       console.log('공구 생성 성공:', data);
-      alert('공구가 작성되었습니다!');
       setIsCreateModalOpen(false);
+      setAlertMessage('공구가 작성되었습니다!');
       await Promise.all([
         fetchGroupBuyList(payload.region || region),
         fetchMyGroupBuyList(),
@@ -132,13 +129,13 @@ export default function GroupBuyPage() {
       );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
-        alert(
+        setAlertMessage(
           `입력 형식 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
             detail?.msg || '입력값을 확인해 주세요.'
           }`
         );
       } else {
-        alert(error.response?.data?.detail || '공구 작성 중 오류가 발생했습니다.');
+        setAlertMessage(error.response?.data?.detail || '공구 작성 중 오류가 발생했습니다.');
       }
     } finally {
       setIsSubmitting(false);
@@ -247,6 +244,12 @@ export default function GroupBuyPage() {
       <ChatModal
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
+      />
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
       />
     </Layout>
   );

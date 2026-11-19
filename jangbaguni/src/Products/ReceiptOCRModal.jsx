@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCamera, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
+import AlertModal from '../Main/AlertModal';
 import { scanProductDate } from '../API/receipt';
 import { registerProducts } from '../API/products';
 import './ReceiptOCRModal.css';
@@ -36,6 +37,7 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
   const [message, setMessage] = useState('');
   const [uploadingId, setUploadingId] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const fileInputRef = useRef(null);
   const targetProductIdRef = useRef(null);
@@ -82,11 +84,11 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
         setScannedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
         setMessage('소비기한이 성공적으로 인식되었습니다.');
       } else {
-        alert('날짜를 인식하지 못했습니다. 다시 촬영해 주세요.');
+        setAlertMessage('날짜를 인식하지 못했습니다. 다시 촬영해 주세요.');
       }
     } catch (error) {
       console.error('상품 날짜 OCR 오류:', error);
-      alert('날짜 인식 중 오류가 발생했습니다.');
+      setAlertMessage('날짜 인식 중 오류가 발생했습니다.');
     } finally {
       setUploadingId(null);
       e.target.value = '';
@@ -108,8 +110,6 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
         const itemId = getItemKey(item, index);
         const isScanned = scannedIds.includes(itemId);
 
-        // 식료품: OCR 실행 시 인식된 날짜 전달, 미실행 시 null 전달
-        // 생필품: 백엔드에 저장된 AI 예측 날짜 그대로 전달
         const productDate = isFoodCategory(item.category)
           ? (isScanned ? (item.product_date ?? null) : null)
           : (item.product_date ?? null);
@@ -136,7 +136,7 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
       onClose();
     } catch (error) {
       console.error('상품 등록 실패:', error);
-      alert('상품 등록 중 오류가 발생했습니다.');
+      setAlertMessage('상품 등록 중 오류가 발생했습니다.');
       setMessage('');
     } finally {
       setIsRegistering(false);
@@ -289,6 +289,12 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
           </button>
         </div>
       </div>
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
+      />
     </div>
   );
 }

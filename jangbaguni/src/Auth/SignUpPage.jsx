@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
+import AlertModal from '../Main/AlertModal';
 import { signUpUser, checkUserName } from '../API/auth';
 import './SignUpPage.css';
 
@@ -26,6 +27,7 @@ export default function SignupPage() {
   const [passwordStatus, setPasswordStatus] = useState({ isSuccess: false, message: '' });
   const [passwordConfirmStatus, setPasswordConfirmStatus] = useState({ isSuccess: false, message: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   // 비밀번호 실시간 세부 정규식 검사 함수
   const validatePassword = (pw) => {
@@ -122,19 +124,19 @@ export default function SignupPage() {
 
     // 필수 입력 및 유효성 검증
     if (!userIdStatus.isSuccess) {
-      alert('아이디 중복 확인을 완료해 주세요.');
+      setAlertMessage('아이디 중복 확인을 완료해 주세요.');
       return;
     }
     if (!passwordStatus.isSuccess || !passwordConfirmStatus.isSuccess) {
-      alert('비밀번호를 올바르게 입력해 주세요.');
+      setAlertMessage('비밀번호를 올바르게 입력해 주세요.');
       return;
     }
     if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) {
-      alert('생년월일을 모두 선택해 주세요.');
+      setAlertMessage('생년월일을 모두 선택해 주세요.');
       return;
     }
     if (!formData.gender) {
-      alert('성별을 선택해 주세요.');
+      setAlertMessage('성별을 선택해 주세요.');
       return;
     }
 
@@ -161,9 +163,9 @@ export default function SignupPage() {
       console.error('회원가입 실패:', error.response?.data);
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
-        alert(detail?.msg || '회원가입 입력 형식을 확인해 주세요.');
+        setAlertMessage(detail?.msg || '회원가입 입력 형식을 확인해 주세요.');
       } else {
-        alert(error.response?.data?.detail || '회원가입 중 오류가 발생했습니다.');
+        setAlertMessage(error.response?.data?.detail || '회원가입 중 오류가 발생했습니다.');
       }
     } finally {
       setIsLoading(false);
@@ -356,6 +358,12 @@ export default function SignupPage() {
           </button>
         </form>
       </section>
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
+      />
     </Layout>
   );
 }

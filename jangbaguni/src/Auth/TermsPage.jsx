@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faXmark, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
+import AlertModal from '../Main/AlertModal';
 import './TermsPage.css';
 
 // 약관 내용 데이터
@@ -73,13 +74,18 @@ export default function TermsPage() {
     });
   };
 
-  // 필수 약관 동의 확인 및 다음 단계(정보 입력) 이동
+  const [alertOpen, setAlertOpen] = useState(false);
+
+// 필수 약관 동의 확인 및 다음 단계(정보 입력) 이동
   const isRequiredAgreed = agreements.service && agreements.privacy;
   const handleNextStep = () => {
-    if (!isRequiredAgreed) return;
+    if (!isRequiredAgreed) {
+      setAlertOpen(true);
+      return;
+    }
     navigate('/signup');
   };
-
+  
   // 약관 상세 모달 열기/닫기
   const openModal = (key) => setModalKey(key);
   const closeModal = () => setModalKey(null);
@@ -210,6 +216,13 @@ export default function TermsPage() {
           </div>
         </div>
       )}
+
+      <AlertModal
+        open={alertOpen}
+        message="필수 약관에 모두 동의해 주세요."
+        onConfirm={() => setAlertOpen(false)}
+      />
+      
     </Layout>
   );
 }

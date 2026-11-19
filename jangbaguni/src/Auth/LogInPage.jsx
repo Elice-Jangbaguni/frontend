@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../Main/Layout';
+import AlertModal from '../Main/AlertModal';
 import { loginUser } from '../API/auth';
 import './LogInPage.css';
 
@@ -11,13 +12,14 @@ export default function LoginPage() {
   const [userId, setUserId] = useState('');
   const [userPw, setUserPw] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   // 로그인 API 요청 및 인증 토큰·사용자 정보 저장 핸들러
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
     if (!userId.trim() || !userPw.trim()) {
-      alert('아이디와 비밀번호를 입력해 주세요.');
+      setAlertMessage('아이디와 비밀번호를 입력해 주세요.');
       return;
     }
 
@@ -49,11 +51,10 @@ export default function LoginPage() {
       // 로그인 API 에러 상태 코드별 안내
       console.error('로그인 실패:', error.response?.data);
       if (error.response?.status === 404) {
-        alert('로그인 API 경로를 찾을 수 없습니다. src/API/auth.js의 경로를 확인해 주세요.');
       } else if (error.response?.status === 422) {
-        alert('아이디 또는 비밀번호 입력 형식이 올바르지 않습니다.');
+        setAlertMessage('아이디 또는 비밀번호 입력 형식이 올바르지 않습니다.');
       } else {
-        alert(error.response?.data?.detail || '아이디 또는 비밀번호가 일치하지 않습니다.');
+        setAlertMessage(error.response?.data?.detail || '아이디 또는 비밀번호가 일치하지 않습니다.');
       }
     } finally {
       setIsLoading(false);
@@ -111,6 +112,12 @@ export default function LoginPage() {
           </button>
         </form>
       </section>
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
+      />
     </Layout>
   );
 }

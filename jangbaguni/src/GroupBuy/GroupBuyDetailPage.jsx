@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Layout from '../Main/Layout';
+import AlertModal from '../Main/AlertModal';
 import EditGroupBuyModal from './EditGroupBuyModal';
 import ChatFloatingButton from '../Chat/ChatFloatingButton';
 import ChatModal from '../Chat/ChatModal';
@@ -113,6 +114,7 @@ export default function GroupBuyDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [alertState, setAlertState] = useState({ message: '', redirectTo: '' });
 
   const [detailData, setDetailData] = useState(() =>
     location.state?.groupBuy
@@ -185,6 +187,14 @@ export default function GroupBuyDetailPage() {
     };
   }, [initialBuyId]);
 
+  const handleConfirmAlert = () => {
+    const targetPath = alertState.redirectTo;
+    setAlertState({ message: '', redirectTo: '' });
+    if (targetPath) {
+      navigate(targetPath, { replace: true });
+    }
+  };
+
   const handleEdit = () => {
     setIsEditModalOpen(true);
   };
@@ -193,7 +203,7 @@ export default function GroupBuyDetailPage() {
   const handleUpdateSubmit = async (payload) => {
     const targetId = detailData.id ?? initialBuyId;
     if (!targetId) {
-      alert('공구 ID를 찾을 수 없습니다.');
+      setAlertState({ message: '공구 ID를 찾을 수 없습니다.', redirectTo: '' });
       return;
     }
 
@@ -235,8 +245,8 @@ export default function GroupBuyDetailPage() {
         });
       }
 
-      alert('공구 정보가 수정되었습니다!');
       setIsEditModalOpen(false);
+      setAlertState({ message: '공구 정보가 수정되었습니다!', redirectTo: '' });
     } catch (error) {
       console.error(
         '공구 수정 실패:',
@@ -245,13 +255,17 @@ export default function GroupBuyDetailPage() {
       );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
-        alert(
-          `입력 형식 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
+        setAlertState({
+          message: `입력 형식 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
             detail?.msg || '입력값을 확인해 주세요.'
-          }`
-        );
+          }`,
+          redirectTo: '',
+        });
       } else {
-        alert(error.response?.data?.detail || '공구 수정 중 오류가 발생했습니다.');
+        setAlertState({
+          message: error.response?.data?.detail || '공구 수정 중 오류가 발생했습니다.',
+          redirectTo: '',
+        });
       }
     } finally {
       setIsUpdating(false);
@@ -262,7 +276,7 @@ export default function GroupBuyDetailPage() {
   const handleDelete = async () => {
     const targetId = detailData.id ?? initialBuyId;
     if (!targetId) {
-      alert('공구 ID를 찾을 수 없습니다.');
+      setAlertState({ message: '공구 ID를 찾을 수 없습니다.', redirectTo: '' });
       return;
     }
 
@@ -273,8 +287,7 @@ export default function GroupBuyDetailPage() {
     try {
       const deleted = await deleteGroupBuy(targetId);
       console.log('공구 삭제 성공:', deleted);
-      alert('공구가 삭제되었습니다.');
-      navigate('/groupbuy', { replace: true });
+      setAlertState({ message: '공구가 삭제되었습니다.', redirectTo: '/groupbuy' });
     } catch (error) {
       console.error(
         '공구 삭제 실패:',
@@ -283,13 +296,17 @@ export default function GroupBuyDetailPage() {
       );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
-        alert(
-          `요청 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
+        setAlertState({
+          message: `요청 오류 (${detail?.loc?.slice(-1)[0] || ''}): ${
             detail?.msg || '공구 ID를 확인해 주세요.'
-          }`
-        );
+          }`,
+          redirectTo: '',
+        });
       } else {
-        alert(error.response?.data?.detail || '공구 삭제 중 오류가 발생했습니다.');
+        setAlertState({
+          message: error.response?.data?.detail || '공구 삭제 중 오류가 발생했습니다.',
+          redirectTo: '',
+        });
       }
     } finally {
       setIsDeleting(false);
@@ -300,7 +317,7 @@ export default function GroupBuyDetailPage() {
   const handleChat = async () => {
     const targetId = detailData.id ?? initialBuyId;
     if (!targetId) {
-      alert('공구 ID를 찾을 수 없습니다.');
+      setAlertState({ message: '공구 ID를 찾을 수 없습니다.', redirectTo: '' });
       return;
     }
 
@@ -345,7 +362,10 @@ export default function GroupBuyDetailPage() {
         error.response?.status,
         error.response?.data || error.message
       );
-      alert(error.response?.data?.detail || '공구 참여 처리 중 오류가 발생했습니다.');
+      setAlertState({
+        message: error.response?.data?.detail || '공구 참여 처리 중 오류가 발생했습니다.',
+        redirectTo: '',
+      });
     } finally {
       setIsJoining(false);
     }
@@ -477,6 +497,12 @@ export default function GroupBuyDetailPage() {
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         initialRoom={selectedChatRoom}
+      />
+
+      <AlertModal
+        open={Boolean(alertState.message)}
+        message={alertState.message}
+        onConfirm={handleConfirmAlert}
       />
     </Layout>
   );

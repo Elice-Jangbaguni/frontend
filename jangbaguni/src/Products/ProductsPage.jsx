@@ -10,6 +10,7 @@ import {
   faChevronUp,
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
+import AlertModal from '../Main/AlertModal';
 import ReceiptOCRModal from './ReceiptOCRModal';
 import { fetchProducts, deleteProduct, depleteProduct } from '../API/products';
 import { uploadReceipt, getReceiptItems } from '../API/receipt';
@@ -28,6 +29,7 @@ export default function ProductsPage() {
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
   const [ocrResultData, setOcrResultData] = useState(null);
   const [currentReceiptId, setCurrentReceiptId] = useState(null);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('전체');
@@ -83,7 +85,7 @@ export default function ProductsPage() {
       setOcrModalOpen(true);
     } catch (error) {
       console.error('영수증 업로드 또는 아이템 조회 중 오류 발생:', error);
-      alert('영수증 처리 중 오류가 발생했습니다.');
+      setAlertMessage('영수증 처리 중 오류가 발생했습니다.');
     } finally {
       setUploadingReceipt(false);
       e.target.value = '';
@@ -114,7 +116,7 @@ export default function ProductsPage() {
         prevProducts.filter((product) => (product.product_id || product.id) !== productId)
       );
     } catch (error) {
-      alert('제품 삭제 중 오류가 발생했습니다.');
+      setAlertMessage('제품 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -148,7 +150,7 @@ export default function ProductsPage() {
         )
       );
     } catch (error) {
-      alert('제품 소진 처리 중 오류가 발생했습니다.');
+      setAlertMessage('제품 소진 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -379,6 +381,12 @@ export default function ProductsPage() {
           onSuccess={loadProducts}
         />
       )}
+
+      <AlertModal
+        open={Boolean(alertMessage)}
+        message={alertMessage}
+        onConfirm={() => setAlertMessage('')}
+      />
     </Layout>
   );
 }
