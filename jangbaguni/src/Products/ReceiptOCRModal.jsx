@@ -1,33 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCamera, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
+import { scanProductDate } from '../API/receipt';
+import { registerProducts } from '../API/products';
 import './ReceiptOCRModal.css';
-
-// 영수증 OCR 결과 더미 데이터
-const sampleProducts = [
-  {
-    product_id: 1,
-    product_name: '매일우유 저지방 900ml',
-    category: '식료품',
-    product_date: '2026-11-20',
-    ocr_date: '2026-11-18',
-  },
-  {
-    product_id: 2,
-    product_name: '물티슈',
-    category: '생필품',
-    product_date: '2027-01-01',
-  },
-  {
-    product_id: 3,
-    product_name: '샴푸',
-    category: '생필품',
-    product_date: null,
-  },
-];
 
 // 임시 소비기한 기준 남은 일수 계산
 const getRemainingDays = (productDate) => {
+  if (!productDate) return null;
   const today = new Date();
   const [year, month, day] = productDate.split('-').map(Number);
   const targetDate = new Date(year, month - 1, day);
@@ -37,58 +17,163 @@ const getRemainingDays = (productDate) => {
   return Math.round(diff / (1000 * 60 * 60 * 24));
 };
 
-export default function ReceiptOCRModal({ onClose }) {
-  // 인식 품목 목록, 카메라 스캔 완료 목록, 안내 메시지 상태 관리
-  const [items, setItems] = useState(sampleProducts);
+const isFoodCategory = (category) => category === '식료품' || category === 'food';
+
+const isDailyCategory = (category) => category === '생필품' || category === 'daily';
+
+export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuccess }) {
+  // 서버에서 받은 items 배열로 상태 초기화
+  const [items, setItems] = useState(() => {
+    let rawItems = [];
+    if (!initialData) return [];
+    if (Array.isArray(initialData.items)) rawItems = initialData.items;
+    else if (Array.isArray(initialData)) rawItems = initialData;
+
+    return rawItems;
+  });
+
   const [scannedIds, setScannedIds] = useState([]);
   const [message, setMessage] = useState('');
+  const [uploadingId, setUploadingId] = useState(null);
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  const foodCount = items.filter((item) => item.category === '식료품').length;
-  const dailyCount = items.filter((item) => item.category === '생필품').length;
+  const fileInputRef = useRef(null);
+  const targetProductIdRef = useRef(null);
 
-  // 개별 품목 소비기한 OCR 테스트 반영
-  const handleCameraClick = (productId) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.product_id === productId
-          ? { ...item, product_date: item.ocr_date }
-          : item
-      )
-    );
+  const foodCount = items.filter((item) => isFoodCategory(item.category)).length;
+  const dailyCount = items.filter((item) => isDailyCategory(item.category)).length;
 
-    setScannedIds((prev) =>
-      prev.includes(productId) ? prev : [...prev, productId]
-    );
+  const getItemKey = (item, index) =>
+    item.ocritem_id ?? item.ocr_item_id ?? item.product_id ?? item.id ?? index;
 
-    setMessage('');
+  // 1. 카메라 버튼 클릭 시: 대상 상품 ID 저장 후 숨겨진 file input 오픈
+  const handleCameraClick = (e, itemId) => {
+    e.stopPropagation();
+    targetProductIdRef.current = itemId;
+    fileInputRef.current?.click();
   };
 
-  // 인식 품목 등록 핸들러
-  const handleRegister = () => {
-    const registerData = items.map((item) => ({
-      product_name: item.product_name,
-      category: item.category,
-      product_date: item.product_date,
-    }));
+  // 2. 사진 선택 시: POST /api/products/product_date_ocr API 호출하여 소비기한 OCR 수행
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    const targetId = targetProductIdRef.current;
+    if (!file || targetId === null || targetId === undefined) return;
 
-    console.log('등록할 상품:', registerData);
-    setMessage('등록되었습니다.');
+    try {
+      setUploadingId(targetId);
+      setMessage('소비기한을 인식 중입니다...');
+
+      const response = await scanProductDate(file);
+      console.log('상품 날짜 OCR 응답:', response);
+
+      const detectedDate =
+        typeof response === 'string'
+          ? response
+          : response?.date || response?.product_date || response?.data?.product_date || response?.data?.date;
+
+      if (detectedDate) {
+        setItems((prev) =>
+          prev.map((item, index) => {
+            const itemId = getItemKey(item, index);
+            return itemId === targetId ? { ...item, product_date: detectedDate } : item;
+          })
+        );
+
+        setScannedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
+        setMessage('소비기한이 성공적으로 인식되었습니다.');
+      } else {
+        alert('날짜를 인식하지 못했습니다. 다시 촬영해 주세요.');
+      }
+    } catch (error) {
+      console.error('상품 날짜 OCR 오류:', error);
+      alert('날짜 인식 중 오류가 발생했습니다.');
+    } finally {
+      setUploadingId(null);
+      e.target.value = '';
+      targetProductIdRef.current = null;
+    }
+  };
+
+  // 인식 품목 일괄 등록 핸들러 (POST /api/products)
+  const handleRegister = async () => {
+    if (isRegistering) return;
+
+    const resolvedReceiptId = Number(
+      receiptId ?? initialData?.receipt_id ?? items[0]?.receipt_id ?? 0
+    );
+
+    const payload = {
+      receipt_id: resolvedReceiptId,
+      products: items.map((item, index) => {
+        const itemId = getItemKey(item, index);
+        const isScanned = scannedIds.includes(itemId);
+
+        // 식료품: OCR 실행 시 인식된 날짜 전달, 미실행 시 null 전달
+        // 생필품: 백엔드에 저장된 AI 예측 날짜 그대로 전달
+        const productDate = isFoodCategory(item.category)
+          ? (isScanned ? (item.product_date ?? null) : null)
+          : (item.product_date ?? null);
+
+        return {
+          ocritem_id: Number(item.ocritem_id ?? item.ocr_item_id ?? item.id ?? 0),
+          product_name: item.product_name ?? '',
+          category: item.category ?? '',
+          subcategory: item.subcategory ?? '',
+          product_date: productDate,
+          total_amount: Number(item.total_amount ?? item.amount ?? item.quantity ?? 1),
+          unit: item.unit ?? '개',
+        };
+      }),
+    };
+
+    try {
+      setIsRegistering(true);
+      setMessage('상품을 등록하는 중입니다...');
+      console.log('등록 요청 payload:', payload);
+
+      await registerProducts(payload);
+      await onSuccess?.();
+      onClose();
+    } catch (error) {
+      console.error('상품 등록 실패:', error);
+      alert('상품 등록 중 오류가 발생했습니다.');
+      setMessage('');
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const hasScanned = scannedIds.length > 0;
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !isRegistering) {
+          onClose();
+        }
+      }}
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        accept="image/*"
+        capture="environment"
+        onClick={(e) => e.stopPropagation()}
+        onChange={handleFileChange}
+      />
+
       <div
         className="modal-container ocr-modal-container"
         role="dialog"
         aria-modal="true"
         aria-labelledby="receipt-ocr-title"
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 상단 헤더 */}
         <div className="modal-header">
-          {/* 상단 인식 결과 배지 */}
           <div className="receipt-ocr-result">
             인식 완료 : 식료품 {foodCount}개, 생필품 {dailyCount}개
           </div>
@@ -96,6 +181,7 @@ export default function ReceiptOCRModal({ onClose }) {
             type="button"
             className="modal-close-btn"
             onClick={onClose}
+            disabled={isRegistering}
             aria-label="닫기"
           >
             <FontAwesomeIcon icon={faXmark} />
@@ -104,7 +190,6 @@ export default function ReceiptOCRModal({ onClose }) {
 
         {/* 모달 본문 */}
         <div className="modal-body ocr-modal-body">
-          {/* 상단 아이콘 및 안내 문구 */}
           <div className="receipt-ocr-heading">
             <div className="receipt-ocr-calendar-badge">
               <FontAwesomeIcon icon={faCalendarCheck} />
@@ -128,54 +213,63 @@ export default function ReceiptOCRModal({ onClose }) {
                 인식된 상품이 없습니다.
               </p>
             ) : (
-              items.map((item) => {
-                const isScanned = scannedIds.includes(item.product_id);
+              items.map((item, index) => {
+                const itemId = getItemKey(item, index);
+                const isScanned = scannedIds.includes(itemId);
+                const isUploading = uploadingId === itemId;
                 const remainingDays = item.product_date
                   ? getRemainingDays(item.product_date)
                   : null;
 
                 let dateLabel;
-                if (item.category === '식료품') {
-                  if (isScanned) {
-                    dateLabel = item.product_date.replaceAll('-', '.');
+                if (isFoodCategory(item.category)) {
+                  if (isScanned || item.product_date) {
+                    dateLabel = item.product_date
+                      ? item.product_date.replaceAll('-', '.')
+                      : '기한 미설정';
                   } else {
-                    dateLabel = `임시 ${remainingDays > 0 ? '+' : ''}${remainingDays}일`;
+                    dateLabel = `임시 ${remainingDays > 0 ? '+' : ''}${remainingDays || 0}일`;
                   }
                 } else {
                   if (remainingDays === null) {
-                    dateLabel = '예측 불가';
+                    dateLabel = item.product_date
+                      ? item.product_date.replaceAll('-', '.')
+                      : '예측 불가';
                   } else {
                     dateLabel = `예측 ${remainingDays > 0 ? '+' : ''}${remainingDays}일`;
                   }
                 }
 
                 return (
-                  <div className="receipt-ocr-item" key={item.product_id}>
+                  <div className="receipt-ocr-item" key={itemId}>
                     <div className="receipt-ocr-item-info">
                       <span className="receipt-ocr-product-name">
                         {item.product_name}
                       </span>
 
-                      {item.category === '식료품' && (
+                      {isFoodCategory(item.category) && (
                         <button
                           type="button"
                           className="receipt-ocr-camera"
-                          onClick={() => handleCameraClick(item.product_id)}
+                          onClick={(e) => handleCameraClick(e, itemId)}
+                          disabled={isUploading || isRegistering}
                           aria-label={`${item.product_name} 소비기한 인식`}
-                          title="소비기한 OCR 테스트"
+                          title="소비기한 촬영 인식"
                         >
-                          <FontAwesomeIcon icon={faCamera} />
+                          <FontAwesomeIcon icon={faCamera} spin={isUploading} />
                         </button>
                       )}
                     </div>
-                    <span className="receipt-ocr-date">{dateLabel}</span>
+                    <span className="receipt-ocr-date">
+                      {isUploading ? '인식 중...' : dateLabel}
+                    </span>
                   </div>
                 );
               })
             )}
           </div>
 
-          {/* 등록 완료 안내 메시지 */}
+          {/* 등록 안내 메시지 */}
           {message && (
             <p className="receipt-ocr-message" role="status">
               {message}
@@ -189,9 +283,9 @@ export default function ReceiptOCRModal({ onClose }) {
             type="button"
             className="modal-confirm-btn"
             onClick={handleRegister}
-            disabled={items.length === 0}
+            disabled={items.length === 0 || isRegistering}
           >
-            {hasScanned ? '등록하기' : '네, 임시 기한 적용'}
+            {isRegistering ? '등록 중...' : hasScanned ? '등록하기' : '네, 임시 기한 적용'}
           </button>
         </div>
       </div>
