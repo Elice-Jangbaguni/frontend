@@ -119,35 +119,109 @@ export default function Layout({ children, showFooter = true }) {
       {/* 푸터 */}
       {showFooter && (
         <footer className="main-footer">
-          <div className="footer-content">
-            <p className="footer-project-title">
-              장바구니 : 영수증 OCR & AI 소비주기 예측 기반 1인 가구 식료품/생필품 관리 웹 서비스
-            </p>
-            <p className="footer-team">Developed by Team 장바구니 (Frontend & Backend)</p>
+          <div className="footer-inner">
+            <div className="footer-grid">
+              {/* 1열: 서비스 브랜딩 & 소개 */}
+              <div className="footer-col footer-brand-col">
+                <div className="footer-logo" onClick={handleGoToMain}>
+                  <FontAwesomeIcon icon={faBasketShopping} className="footer-logo-icon" />
+                  <span>장바구니</span>
+                </div>
+                <p className="footer-desc">
+                  영수증 OCR 자동 인식과 AI 소비 주기 예측으로<br />
+                  1인 가구의 식료품·생필품 관리부터 동네 공동구매까지<br />
+                  낭비 없는 일상을 돕는 스마트 생활 관리 웹 서비스입니다.
+                </p>
+                <div className="footer-highlights">
+                  <span>영수증 OCR</span>
+                  <span>AI 소비 예측</span>
+                  <span>동네 공동구매</span>
+                </div>
+              </div>
 
-            <div className="footer-members">
-              <p>
-                Frontend : 이승민{' '}
-                <a href="https://github.com/null4848" target="_blank" rel="noopener noreferrer" className="footer-link">
-                  @null4848
-                </a>
-              </p>
-              <p>
-                Backend : 안소형{' '}
-                <a href="https://github.com/ahnsohyeong" target="_blank" rel="noopener noreferrer" className="footer-link">
-                  @ahnsohyeong
-                </a>
-              </p>
+              {/* 2열: 팀 & 개발자 */}
+              <div className="footer-col">
+                <h4 className="footer-heading">TEAM</h4>
+                <ul className="footer-list">
+                  <li className="footer-member-row">
+                    <span className="footer-label">Frontend</span>
+                    <span className="footer-member-name">이승민</span>
+                    <a
+                      href="https://github.com/null4848"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-link"
+                    >
+                      @null4848
+                    </a>
+                  </li>
+                  <li className="footer-member-row">
+                    <span className="footer-label">Backend</span>
+                    <span className="footer-member-name">안소형</span>
+                    <a
+                      href="https://github.com/ahnsohyeong"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-link"
+                    >
+                      @ahnsohyeong
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* 3열: 링크 & 문의 */}
+              <div className="footer-col">
+                <h4 className="footer-heading">LINKS & CONTACT</h4>
+                <ul className="footer-list">
+                  <li className="footer-link-row">
+                    <span className="footer-label">GitHub</span>
+                    <a
+                      href="https://github.com/Elice-Jangbaguni"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-link"
+                    >
+                      Elice-Jangbaguni
+                    </a>
+                  </li>
+                  <li className="footer-link-row">
+                    <span className="footer-label">Notion</span>
+                    <a
+                      href="https://fringe-minnow-8f4.notion.site/AI-40d9caa5c33a80d1b348e59e257ae30b?pvs=143"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-link"
+                    >
+                      프로젝트 기획 문서
+                    </a>
+                  </li>
+                  <li className="footer-link-row">
+                    <span className="footer-label">Figma</span>
+                    <a
+                      href="https://www.figma.com/design/jdA8ItKrGXJFyl8sY8taJk/%EC%9E%A5%EB%B0%94%EA%B5%AC%EB%8B%88?node-id=1019-1510&t=kSsJihpr5q2aNiHw-1"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-link"
+                    >
+                      UI/UX 디자인 시안
+                    </a>
+                  </li>
+                  <li className="footer-link-row">
+                    <span className="footer-label">Email</span>
+                    <a href="mailto:jangbaguni9@gmail.com" className="footer-link">
+                      jangbaguni9@gmail.com
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
 
-            <p className="footer-github">
-              GITHUB :{' '}
-              <a href="https://github.com/Elice-Jangbaguni" target="_blank" rel="noopener noreferrer" className="footer-link">
-                https://github.com/Elice-Jangbaguni
-              </a>
-            </p>
-
-            <p className="footer-copy">© 2026 장바구니 Project. All rights reserved.</p>
+            {/* 하단 바 */}
+            <div className="footer-bottom">
+              <p className="footer-copy">© 2026 장바구니 (Jangbaguni). All rights reserved.</p>
+              <p className="footer-subcopy">1인 가구 식료품·생필품 관리 & 동네 공동구매 서비스</p>
+            </div>
           </div>
         </footer>
       )}
