@@ -113,7 +113,6 @@ export default function SignupPage() {
         setUserIdStatus({ isChecked: true, isSuccess: false, message: '중복 아이디입니다.' });
       }
     } catch (error) {
-      console.error('아이디 중복 확인 에러:', error.response?.data);
       setUserIdStatus({ isChecked: true, isSuccess: false, message: '중복 확인 중 오류가 발생했습니다.' });
     }
   };
@@ -160,7 +159,6 @@ export default function SignupPage() {
       navigate('/login');
     } catch (error) {
       // 회원가입 API 에러 처리
-      console.error('회원가입 실패:', error.response?.data);
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
         setAlertMessage(detail?.msg || '회원가입 입력 형식을 확인해 주세요.');

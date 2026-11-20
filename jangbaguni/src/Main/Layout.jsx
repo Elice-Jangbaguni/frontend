@@ -52,7 +52,6 @@ export default function Layout({ children, showFooter = true }) {
     try {
       await logoutUser();
     } catch (error) {
-      console.error('로그아웃 API 요청 오류:', error.response?.data);
     } finally {
       localStorage.removeItem('access_token');
       localStorage.removeItem('isLoggedIn');

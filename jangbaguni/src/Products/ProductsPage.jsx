@@ -46,7 +46,6 @@ export default function ProductsPage() {
         setSummary(data.summary);
       }
     } catch (error) {
-      console.error('제품 데이터 로드 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -69,14 +68,12 @@ export default function ProductsPage() {
       setUploadingReceipt(true);
 
       const uploadResponse = await uploadReceipt(file);
-      console.log('영수증 업로드 성공 응답:', uploadResponse);
 
       const receiptId = uploadResponse.receipt_id ?? null;
       setCurrentReceiptId(receiptId);
 
       if (receiptId) {
         const itemsResponse = await getReceiptItems(receiptId);
-        console.log('영수증 아이템 조회 성공:', itemsResponse);
         setOcrResultData(itemsResponse);
       } else {
         setOcrResultData(uploadResponse);
@@ -84,7 +81,6 @@ export default function ProductsPage() {
 
       setOcrModalOpen(true);
     } catch (error) {
-      console.error('영수증 업로드 또는 아이템 조회 중 오류 발생:', error);
       setAlertMessage('영수증 처리 중 오류가 발생했습니다.');
     } finally {
       setUploadingReceipt(false);

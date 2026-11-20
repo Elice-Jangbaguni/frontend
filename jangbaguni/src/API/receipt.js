@@ -18,7 +18,6 @@ export const uploadReceipt = async (file) => {
     });
     return response.data;
   } catch (error) {
-    console.error('영수증 업로드 실패:', error);
     throw error;
   }
 };
@@ -48,7 +47,6 @@ export const scanProductDate = async (file) => {
     });
     return response.data;
   } catch (error) {
-    console.error('상품 날짜 OCR 인식 실패:', error);
     throw error;
   }
 };

@@ -149,7 +149,6 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
           }));
         }
       } catch (error) {
-        console.error('내 참여 공구 목록 조회 실패:', error.response?.data || error);
         if (isMounted) {
           setRoomsError('참여 중인 공구 목록을 불러오지 못했습니다.');
           setChatRooms([]);

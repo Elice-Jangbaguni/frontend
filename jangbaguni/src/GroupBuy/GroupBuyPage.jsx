@@ -72,11 +72,6 @@ export default function GroupBuyPage() {
       const data = await getRegionGroupBuyList(targetRegion);
       setPosts(extractPosts(data));
     } catch (error) {
-      console.error(
-        '공구 목록 조회 실패:',
-        error.response?.status,
-        error.response?.data || error.message
-      );
       setPosts([]);
     } finally {
       setIsLoading(false);
@@ -90,11 +85,7 @@ export default function GroupBuyPage() {
       const data = await getMyGroupBuyList();
       setMyPosts(extractPosts(data));
     } catch (error) {
-      console.error(
-        '참여 중인 공구 조회 실패:',
-        error.response?.status,
-        error.response?.data || error.message
-      );
+
       setMyPosts([]);
     } finally {
       setIsMyLoading(false);
@@ -121,7 +112,6 @@ export default function GroupBuyPage() {
     setIsSubmitting(true);
     try {
       const data = await createGroupBuy(payload);
-      console.log('공구 생성 성공:', data);
       setIsCreateModalOpen(false);
       setAlertMessage('공구가 작성되었습니다!');
       await Promise.all([
@@ -129,11 +119,6 @@ export default function GroupBuyPage() {
         fetchMyGroupBuyList(),
       ]);
     } catch (error) {
-      console.error(
-        '공구 생성 실패:',
-        error.response?.status,
-        error.response?.data || error.message
-      );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
         setAlertMessage(

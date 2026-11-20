@@ -27,7 +27,6 @@ export default function LoginPage() {
     try {
       // POST /api/auth/login 요청 ({ username, password })
       const data = await loginUser(userId, userPw);
-      console.log('로그인 성공 응답:', data);
 
       // 응답이 토큰 문자열 또는 { access_token, user } 객체 형태인 경우 모두 처리
       const token = typeof data === 'string' ? data : data?.access_token;
@@ -49,7 +48,6 @@ export default function LoginPage() {
       navigate('/products');
     } catch (error) {
       // 로그인 API 에러 상태 코드별 안내
-      console.error('로그인 실패:', error.response?.data);
       if (error.response?.status === 404) {
       } else if (error.response?.status === 422) {
         setAlertMessage('아이디 또는 비밀번호 입력 형식이 올바르지 않습니다.');

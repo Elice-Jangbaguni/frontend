@@ -66,7 +66,6 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
       setMessage('소비기한을 인식 중입니다...');
 
       const response = await scanProductDate(file);
-      console.log('상품 날짜 OCR 응답:', response);
 
       const detectedDate =
         typeof response === 'string'
@@ -87,7 +86,6 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
         setAlertMessage('날짜를 인식하지 못했습니다. 다시 촬영해 주세요.');
       }
     } catch (error) {
-      console.error('상품 날짜 OCR 오류:', error);
       setAlertMessage('날짜 인식 중 오류가 발생했습니다.');
     } finally {
       setUploadingId(null);
@@ -129,13 +127,11 @@ export default function ReceiptOCRModal({ initialData, receiptId, onClose, onSuc
     try {
       setIsRegistering(true);
       setMessage('상품을 등록하는 중입니다...');
-      console.log('등록 요청 payload:', payload);
 
       await registerProducts(payload);
       await onSuccess?.();
       onClose();
     } catch (error) {
-      console.error('상품 등록 실패:', error);
       setAlertMessage('상품 등록 중 오류가 발생했습니다.');
       setMessage('');
     } finally {

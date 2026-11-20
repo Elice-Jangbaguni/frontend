@@ -167,11 +167,7 @@ export default function GroupBuyDetailPage() {
         }
       } catch (error) {
         if (isMounted) {
-          console.error(
-            '공구 상세 조회 실패:',
-            error.response?.status,
-            error.response?.data || error.message
-          );
+
           setErrorMessage(
             error.response?.data?.detail || '공구 상세 정보를 불러오지 못했습니다.'
           );
@@ -213,7 +209,6 @@ export default function GroupBuyDetailPage() {
     setIsUpdating(true);
     try {
       const updated = await updateGroupBuy(targetId, payload);
-      console.log('공구 수정 성공:', updated);
 
       if (
         updated &&
@@ -251,11 +246,6 @@ export default function GroupBuyDetailPage() {
       setIsEditModalOpen(false);
       setAlertState({ message: '공구 정보가 수정되었습니다!', redirectTo: '' });
     } catch (error) {
-      console.error(
-        '공구 수정 실패:',
-        error.response?.status,
-        error.response?.data || error.message
-      );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
         setAlertState({
@@ -289,14 +279,8 @@ export default function GroupBuyDetailPage() {
     setIsDeleting(true);
     try {
       const deleted = await deleteGroupBuy(targetId);
-      console.log('공구 삭제 성공:', deleted);
       setAlertState({ message: '공구가 삭제되었습니다.', redirectTo: '/groupbuy' });
     } catch (error) {
-      console.error(
-        '공구 삭제 실패:',
-        error.response?.status,
-        error.response?.data || error.message
-      );
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail?.[0];
         setAlertState({
@@ -327,7 +311,6 @@ export default function GroupBuyDetailPage() {
     setIsJoining(true);
     try {
       const joined = await joinGroupBuy(targetId);
-      console.log('공구 참여 성공:', joined);
 
       setDetailData((prev) => {
         const nextCurrent =
@@ -360,11 +343,7 @@ export default function GroupBuyDetailPage() {
       });
       setIsChatOpen(true);
     } catch (error) {
-      console.error(
-        '공구 참여 실패:',
-        error.response?.status,
-        error.response?.data || error.message
-      );
+
       setAlertState({
         message: error.response?.data?.detail || '공구 참여 처리 중 오류가 발생했습니다.',
         redirectTo: '',
