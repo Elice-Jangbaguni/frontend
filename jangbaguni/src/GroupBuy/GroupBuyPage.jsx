@@ -17,13 +17,16 @@ import './GroupBuyPage.css';
 const DEFAULT_REGION = '서울특별시 성북구';
 const BACKEND_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'https://jangbaguni-backend.onrender.com';
-const FALLBACK_IMAGE =
-  'https://thumbnail.coupangcdn.com/thumbnails/remote/640x640ex/image/vendor_inventory/8510/5e1707958f1f47428c08acae84c9999c567455ffb11d7020f8887705d223.jpg';
 
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return FALLBACK_IMAGE;
-  if (imagePath.startsWith('http')) return imagePath;
-  return `${BACKEND_BASE_URL}${imagePath}`;
+const resolveImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  if (imagePath.startsWith('/')) {
+    return `${BACKEND_BASE_URL}${imagePath}`;
+  }
+  return imagePath;
 };
 
 const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
@@ -39,6 +42,7 @@ const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
   return '모집중';
 };
 
+// 목록 API 응답({ group_buy: [...] } 또는 배열)에서 게시글 배열 추출
 const extractPosts = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.group_buy)) return data.group_buy;
@@ -61,6 +65,7 @@ export default function GroupBuyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  // 지역별 공동구매 목록 API 조회 (GET /api/group_buy)
   const fetchGroupBuyList = useCallback(async (targetRegion) => {
     setIsLoading(true);
     try {
@@ -78,6 +83,7 @@ export default function GroupBuyPage() {
     }
   }, []);
 
+  // 내 참여 공동구매 목록 API 조회 (GET /api/group_buy/participants)
   const fetchMyGroupBuyList = useCallback(async () => {
     setIsMyLoading(true);
     try {
@@ -110,6 +116,7 @@ export default function GroupBuyPage() {
     });
   };
 
+  // 공동구매 생성 API 요청 및 목록 갱신 (POST /api/group_buy)
   const handleCreateGroupBuy = async (payload) => {
     setIsSubmitting(true);
     try {
@@ -156,6 +163,7 @@ export default function GroupBuyPage() {
         : rawPrice;
 
     const place = item.pickup_place ?? item.place ?? '';
+    const imageUrl = resolveImageUrl(item.product_image_path);
 
     return (
       <div
@@ -167,11 +175,15 @@ export default function GroupBuyPage() {
           <span className="status-badge">
             {statusText} ({currentPeople}/{numberOfPeople}명)
           </span>
-          <img
-            src={getImageUrl(item.product_image_path)}
-            alt={item.product_name}
-            className="product-image"
-          />
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={item.product_name}
+              className="product-image"
+            />
+          ) : (
+            <div className="product-image image-placeholder" />
+          )}
         </div>
         <div className="card-content">
           <h3 className="product-title">{item.product_name}</h3>

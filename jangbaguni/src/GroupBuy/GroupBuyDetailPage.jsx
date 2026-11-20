@@ -15,13 +15,16 @@ import './GroupBuyDetailPage.css';
 
 const BACKEND_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'https://jangbaguni-backend.onrender.com';
-const FALLBACK_IMAGE =
-  'https://thumbnail.coupangcdn.com/thumbnails/remote/657x657q90trim/image/retail/images/92420907427591-1d313b60-ec44-4332-a2e6-7a246473bb4c.jpg';
 
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return FALLBACK_IMAGE;
-  if (imagePath.startsWith('http')) return imagePath;
-  return `${BACKEND_BASE_URL}${imagePath}`;
+const resolveImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  if (imagePath.startsWith('/')) {
+    return `${BACKEND_BASE_URL}${imagePath}`;
+  }
+  return imagePath;
 };
 
 const getStatusLabel = (status, currentPeople = 1, numberOfPeople = 2) => {
@@ -77,7 +80,7 @@ const mapDetailResponse = (data) => {
     title: data?.product_name || '',
     price: formattedPrice,
     location: data?.place ?? data?.pickup_place ?? '',
-    imageUrl: getImageUrl(data?.product_image_path),
+    imageUrl: resolveImageUrl(data?.product_image_path),
     uploadedDate: formatUploadedDate(data?.uploaded_date),
     description: data?.description || '',
   };
@@ -137,7 +140,7 @@ export default function GroupBuyDetailPage() {
           title: '',
           price: '',
           location: '',
-          imageUrl: FALLBACK_IMAGE,
+          imageUrl: '',
           uploadedDate: '',
           description: '',
         }
@@ -410,16 +413,15 @@ export default function GroupBuyDetailPage() {
         <div className="detail-section">
           <div className="detail-left">
             <div className="detail-image-wrapper">
-              <img
-                src={detailData.imageUrl}
-                alt={detailData.title}
-                className="detail-product-image"
-                onError={(e) => {
-                  if (e.currentTarget.src !== FALLBACK_IMAGE) {
-                    e.currentTarget.src = FALLBACK_IMAGE;
-                  }
-                }}
-              />
+              {detailData.imageUrl ? (
+                <img
+                  src={detailData.imageUrl}
+                  alt={detailData.title}
+                  className="detail-product-image"
+                />
+              ) : (
+                <div className="detail-product-image image-placeholder" />
+              )}
             </div>
             {sellerLabel && <div className="seller-badge">{sellerLabel}</div>}
           </div>
