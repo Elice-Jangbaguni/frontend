@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrashCan,
@@ -17,6 +18,8 @@ import { uploadReceipt, getReceiptItems } from '../API/receipt';
 import './ProductsPage.css';
 
 export default function ProductsPage() {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [summary, setSummary] = useState({
     expired_count: 0,
@@ -86,6 +89,16 @@ export default function ProductsPage() {
       setUploadingReceipt(false);
       e.target.value = '';
     }
+  };
+
+  const handleRecommendedClick = (productName) => {
+    if (!productName) return;
+    navigate('/groupbuy', {
+      state: {
+        searchKeyword: productName,
+        scrollTo: 'neighborhood-groupbuy',
+      },
+    });
   };
 
   const filteredProducts = products.filter((product) => {
@@ -195,7 +208,20 @@ export default function ProductsPage() {
 
               {summary.recommended_items && summary.recommended_items.length > 0 ? (
                 summary.recommended_items.slice(0, 2).map((item) => (
-                  <div key={item.product_id} className="products-summary-card summary-ai">
+                  <div
+                    key={item.product_id}
+                    role="button"
+                    tabIndex={0}
+                    style={{ cursor: 'pointer' }}
+                    className="products-summary-card summary-ai"
+                    onClick={() => handleRecommendedClick(item.product_name)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRecommendedClick(item.product_name);
+                      }
+                    }}
+                  >
                     <div className="products-summary-content">
                       <p>AI 소진 예측</p>
                       <h2>{item.product_name}</h2>

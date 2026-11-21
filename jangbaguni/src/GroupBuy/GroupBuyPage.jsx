@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../Main/Layout';
 import AlertModal from '../Main/AlertModal';
 import CreateGroupBuyModal from './CreateGroupBuyModal';
@@ -15,8 +15,7 @@ import {
 import './GroupBuyPage.css';
 
 const DEFAULT_REGION = '서울특별시 성북구';
-const BACKEND_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://jangbaguni-backend.onrender.com';
+const BACKEND_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 const resolveImageUrl = (imagePath) => {
   if (!imagePath) return '';
@@ -53,10 +52,13 @@ const extractPosts = (data) => {
 
 export default function GroupBuyPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const neighborhoodSectionRef = useRef(null);
 
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [posts, setPosts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(location.state?.searchKeyword || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isMyLoading, setIsMyLoading] = useState(false);
 
@@ -64,6 +66,15 @@ export default function GroupBuyPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+
+  useEffect(() => {
+    if (location.state?.searchKeyword !== undefined) {
+      setSearchTerm(location.state.searchKeyword || '');
+    }
+    if (location.state?.scrollTo === 'neighborhood-groupbuy') {
+      neighborhoodSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.state]);
 
   // 지역별 공동구매 목록 API 조회 (GET /api/group_buy)
   const fetchGroupBuyList = useCallback(async (targetRegion) => {
@@ -85,7 +96,6 @@ export default function GroupBuyPage() {
       const data = await getMyGroupBuyList();
       setMyPosts(extractPosts(data));
     } catch (error) {
-
       setMyPosts([]);
     } finally {
       setIsMyLoading(false);
@@ -100,6 +110,15 @@ export default function GroupBuyPage() {
     fetchMyGroupBuyList();
   }, [fetchMyGroupBuyList]);
 
+  const filteredPosts = posts.filter((item) => {
+    const keyword = searchTerm.trim().toLowerCase();
+    if (!keyword) return true;
+
+    const productName = (item.product_name ?? '').toLowerCase();
+    const place = (item.pickup_place ?? item.place ?? '').toLowerCase();
+    return productName.includes(keyword) || place.includes(keyword);
+  });
+
   const handleToDetail = (item) => {
     const buyId = item.group_buy_id ?? item.buy_id ?? item.id;
     navigate('/groupbuy/detail', {
@@ -111,7 +130,7 @@ export default function GroupBuyPage() {
   const handleCreateGroupBuy = async (payload) => {
     setIsSubmitting(true);
     try {
-      const data = await createGroupBuy(payload);
+      await createGroupBuy(payload);
       setIsCreateModalOpen(false);
       setAlertMessage('공구가 작성되었습니다!');
       await Promise.all([
@@ -208,10 +227,22 @@ export default function GroupBuyPage() {
           </div>
         </section>
 
-        <div className="page-section-header">
+        <div className="page-section-header" ref={neighborhoodSectionRef}>
           <div className="page-section-title-group">
             <h2 className="page-section-title">우리 동네 공구</h2>
             <span className="location-tag">{region}</span>
+          </div>
+
+          <div className="groupbuy-search-box">
+            <FontAwesomeIcon className="groupbuy-search-icon" icon={faMagnifyingGlass} />
+            <input
+              type="search"
+              className="groupbuy-search"
+              placeholder="품목 검색"
+              aria-label="품목 검색"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
 
@@ -219,11 +250,15 @@ export default function GroupBuyPage() {
           <div className="surface-box">
             {isLoading ? (
               <p className="loading-text">공구 목록을 불러오는 중...</p>
-            ) : posts.length === 0 ? (
-              <p className="empty-text">우리 동네에 진행 중인 공구가 없습니다.</p>
+            ) : filteredPosts.length === 0 ? (
+              <p className="empty-text">
+                {searchTerm
+                  ? `"${searchTerm}"에 해당하는 우리 동네 공구가 없습니다.`
+                  : '우리 동네에 진행 중인 공구가 없습니다.'}
+              </p>
             ) : (
               <div className="card-grid">
-                {posts.map((item) => renderCard(item, 'neigh'))}
+                {filteredPosts.map((item) => renderCard(item, 'neigh'))}
               </div>
             )}
           </div>
