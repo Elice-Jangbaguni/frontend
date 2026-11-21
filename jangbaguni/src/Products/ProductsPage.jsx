@@ -154,7 +154,7 @@ export default function ProductsPage() {
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
           (product.product_id || product.id) === productId
-            ? { ...product, status: '소진' }
+            ? { ...product, status: 'DEPLETED', isDepleted: true }
             : product
         )
       );
@@ -319,9 +319,18 @@ export default function ProductsPage() {
                             <td>
                               {(() => {
                                 const { text, className } = getStatusLabel(product.status);
+                                const isDepletedStatus =
+                                product.isDepleted ||
+                                product.status === 'DEPLETED' ||
+                                product.status === '소진';
+
                                 return (
-                                  <span className={`products-status ${className}`}>
-                                    {text}
+                                 <span
+                                    className={`products-status ${className} ${
+                                      isDepletedStatus ? 'status-소진' : ''
+                                    }`.trim()}
+                                  >
+                                    {isDepletedStatus ? '소진' : text}
                                   </span>
                                 );
                               })()}
