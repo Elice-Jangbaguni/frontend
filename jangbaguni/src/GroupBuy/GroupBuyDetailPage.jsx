@@ -335,7 +335,11 @@ export default function GroupBuyDetailPage() {
 
       setSelectedChatRoom({
         id: targetId,
+        buyId: targetId,
         productTitle: detailData.title,
+        title: detailData.title,
+        place: detailData.location,
+        pickupPlace: detailData.location,
         lastMessage: '',
         updatedAt: '방금 전',
         unreadCount: 0,

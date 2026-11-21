@@ -57,15 +57,17 @@ const buildSeedMessagesForRooms = (rooms) => {
 
 // API 응답 항목을 채팅방 목록 형태로 정규화
 const normalizeGroupBuyToRoom = (item, index = 0) => {
-  const roomId = item.buy_id ?? item.id;
-  const productTitle = item.product_name ?? item.title ?? `공구 #${roomId}`;
+  const roomId = item.buy_id ?? item.buyId ?? item.id;
+  const productTitle = item.productTitle ?? item.product_name ?? item.title ?? `공구 #${roomId}`;
+  const pickupPlace =
+    item.pickupPlace ?? item.pickup_place ?? item.place ?? item.location ?? '';
   const partnerName =
+    item.partnerName ??
     item.partner_name ??
     item.seller_name ??
     item.writer_name ??
     item.nickname ??
     item.username ??
-    item.place ??
     '참여자';
 
   const currentPeople = Number(item.current_people ?? item.participants_count ?? 0);
@@ -96,6 +98,7 @@ const normalizeGroupBuyToRoom = (item, index = 0) => {
     id: roomId,
     buyId: roomId,
     productTitle,
+    pickupPlace,
     partnerName,
     lastMessage: seedLastMessage,
     updatedAt: formatDateOnly(rawDate),
@@ -243,7 +246,11 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
               </button>
               <div className="chat-header-titles">
                 <h3 className="chat-partner-name">{selectedRoom.productTitle}</h3>
-                <span className="chat-product-subtitle">{selectedRoom.partnerName}</span>
+                <span className="chat-product-subtitle">
+                  {selectedRoom.pickupPlace
+                    ? `📍 ${selectedRoom.pickupPlace}`
+                    : selectedRoom.partnerName}
+                </span>
               </div>
             </div>
           ) : (
@@ -318,7 +325,6 @@ export default function ChatModal({ isOpen, onClose, initialRoom = null }) {
               <span className="banner-tag">{selectedRoom.status}</span>
               <span className="banner-title">{selectedRoom.productTitle}</span>
             </div>
-
             {/* 메시지 내역 영역 */}
             <div className="chat-messages-area">
               {currentMessages.map((msg) => (
